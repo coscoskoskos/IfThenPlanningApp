@@ -1,0 +1,25 @@
+<resources>
+    <string name="app_name">If Then Planner</string>
+    <string name="empty">プランを追加しましょう！</string>
+    <string name="if_statement">If</string>
+    <string name="then_statement">Then</string>
+    <string name="stop_button_discription">Stop</string>
+    <string name="done_button_discription">Done</string>
+    <string name="head_string">新しいプランを作成</string>
+    <string name="if_title">If- もし...</string>
+    <string name="if_hint">条件・シチュエーションをここに入力</string>
+    <string name="then_title">...する- Then</string>
+    <string name="then_hint">行動をここに入力</string>
+    <string name="button_text">保存</string>
+    <string name="button_detail_done">完了する</string>
+    <string name="option_clear">リストを空にする</string>
+    <string name="option_share">シェア</string>
+    <string name="drw_important">重要</string>
+    <string name="drw_trash">ゴミ箱</string>
+    <string name="drw_setting">設定</string>
+    <string name="ok">OK</string>
+    <string name="cancel">CANCEL</string>
+    <string name="clear">削除</string>
+    <string name="ask_if">すべて削除しますか？</string>
+    <string name="edit_context">編集する</string>
+</resources>
