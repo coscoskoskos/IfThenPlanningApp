@@ -22,4 +22,7 @@
     <string name="clear">削除</string>
     <string name="ask_if">すべて削除しますか？</string>
     <string name="edit_context">編集する</string>
+    <string name="title">タイトル</string>
+    <string name="title_hint">プランのタイトル</string>
+    <string name="choose_color">カラータグを設定</string>
 </resources>

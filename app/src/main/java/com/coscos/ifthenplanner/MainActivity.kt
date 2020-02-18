@@ -156,7 +156,7 @@ class MainActivity : AppCompatActivity() {
                                 empty_view.visibility = View.VISIBLE
                             }
                         }
-                        .setNegativeButton("No") { dialog, which -> }
+                        .setNegativeButton("キャンセル") { dialog, which -> }
                         .setIcon(R.drawable.ic_delete_black_24dp)
                         .show()
                 }

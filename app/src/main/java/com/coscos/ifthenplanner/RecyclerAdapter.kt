@@ -20,6 +20,7 @@ class RecyclerAdapter(private val context: Context,
             it.ifStatement.text = ifList.get(position)
             it.thenStatement.text= thenList.get(position)
 
+
         }
     }
 
