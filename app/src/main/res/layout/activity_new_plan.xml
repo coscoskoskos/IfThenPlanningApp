@@ -59,6 +59,7 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/head_text" />
 
+
         <LinearLayout
             android:id="@+id/linear_layout1"
             android:layout_width="match_parent"
@@ -97,8 +98,8 @@
                     android:inputType="text" />
             </com.google.android.material.textfield.TextInputLayout>
 
-
         </LinearLayout>
+
 
         <View
             android:id="@+id/grey_line2"
@@ -110,6 +111,7 @@
             app:layout_constraintBottom_toTopOf="@+id/linear_layout2"
             app:layout_constraintTop_toBottomOf="@+id/linear_layout1"
             tools:layout_editor_absoluteX="-16dp" />
+
 
         <LinearLayout
             android:id="@+id/linear_layout2"
@@ -179,6 +181,7 @@
 
         </LinearLayout>
 
+
         <View
             android:id="@+id/grey_line3"
             android:layout_width="match_parent"
@@ -189,13 +192,14 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/linear_layout2" />
 
-        <LinearLayout
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/select_color"
             android:layout_width="match_parent"
-            android:layout_height="100dp"
-            android:orientation="horizontal"
+            android:layout_height="wrap_content"
             android:layout_marginStart="24dp"
             android:layout_marginEnd="24dp"
-            android:layout_marginTop="24dp"
+            android:layout_marginTop="12dp"
             app:layout_constraintTop_toBottomOf="@id/grey_line3"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent" >
@@ -203,28 +207,103 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
                 android:text="@string/choose_color"
                 android:textColor="@color/textColorPrimary"
                 android:textSize="20sp"/>
 
             <Spinner
                 android:id="@+id/spinner"
-                android:layout_marginStart="64dp"
-                android:layout_width="match_parent"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_weight="1" />
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                />
 
-        </LinearLayout>
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
 
         <View
             android:id="@+id/grey_line4"
             android:layout_width="match_parent"
             android:layout_height="0.5dp"
-            android:layout_marginTop="100dp"
+            android:layout_marginTop="24dp"
             android:background="@color/grey"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/grey_line3" />
+            app:layout_constraintTop_toBottomOf="@+id/select_color" />
+
+
+        <LinearLayout
+            android:id="@+id/notification"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="24dp"
+            android:orientation="vertical"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="@id/grey_line4"
+            app:layout_constraintBottom_toTopOf="@id/grey_line5">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/notification"
+                    android:textColor="@color/textColorPrimary"
+                    android:textSize="20sp" />
+
+                <Switch
+                    android:id="@+id/switch1"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    app:switchMinWidth="100dp"
+                    android:layout_marginStart="24dp" />
+
+            </LinearLayout>
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp">
+
+                <TextView
+                    android:id="@+id/date"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentStart="true"
+                    android:textSize="16sp"
+                    android:onClick="setNotificationDate"
+                    tools:text="2020年 2月25日（火）" />
+
+                <TextView
+                    android:id="@+id/push_time"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentEnd="true"
+                    android:onClick="setNotificationTime"
+                    android:textSize="16sp"
+                    android:text="12時00分" />
+
+            </RelativeLayout>
+        </LinearLayout>
+
+
+        <View
+            android:id="@+id/grey_line5"
+            android:layout_width="match_parent"
+            android:layout_height="0.5dp"
+            android:background="@color/grey"
+            android:layout_marginTop="24dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/notification" />
 
         <Button
             android:id="@+id/button"
@@ -240,40 +319,7 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/grey_line4" />
-
-        <Button
-            android:id="@+id/button_notification"
-            android:layout_width="100dp"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="24dp"
-            android:background="@drawable/button_style_prime"
-            android:foreground="?android:attr/selectableItemBackground"
-            android:onClick="setNotificationButton"
-            android:text="通知"
-            android:textColor="#FFFFFF"
-            android:textStyle="bold"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.5"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/button" />
-
-        <Button
-            android:id="@+id/button_time"
-            android:layout_width="100dp"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="24dp"
-            android:layout_marginBottom="100dp"
-            android:background="@drawable/button_style_prime"
-            android:foreground="?android:attr/selectableItemBackground"
-            android:onClick="setTimeButton"
-            android:text="時刻"
-            android:textColor="#FFFFFF"
-            android:textStyle="bold"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.5"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/button_notification" />
+            app:layout_constraintTop_toBottomOf="@+id/grey_line5" />
 
 
     </androidx.constraintlayout.widget.ConstraintLayout>
