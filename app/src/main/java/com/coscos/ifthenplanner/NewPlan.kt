@@ -16,7 +16,7 @@ import java.time.LocalDate
 import java.util.*
 
 
-class NewPlan : AppCompatActivity() {
+class NewPlan : AppCompatActivity(), NotificationPick.OnDateSelectedListener, TimePick.OnTimeSelectedListener {
 
     private var ifContent: String = ""
     private var thenContent: String? = ""
@@ -34,8 +34,6 @@ class NewPlan : AppCompatActivity() {
         val spinner = findViewById<Spinner>(R.id.spinner)
 
         var adapter = SpinnerAdapter(this.applicationContext, R.layout.spinner_list, spinnerItems, spinnerColors)
-
-
 
         spinner.adapter = adapter
 
@@ -76,7 +74,7 @@ class NewPlan : AppCompatActivity() {
             else -> null
         }
 
-        date.text = (yearString + "年" + monthString + "月" + dateString + "日" + "（$dayString）")
+        date.text = ("${yearString}年${monthString}月${dateString}日（$dayString）")
         push_time.text = ("$PMString${hourString.toInt()+1}時${minString}分")
 
     }
@@ -100,6 +98,49 @@ class NewPlan : AppCompatActivity() {
         val newFragment = NotificationPick()
         newFragment.show(supportFragmentManager, "notificationPicker")
     }
+
+    //日付選択のonSelectedインターフェース実装
+    override fun onSelected(year: Int, month: Int, day: Int) {
+        val cal = Calendar.getInstance()
+        cal.set(year, month, day)
+
+        val setDayOfWeek = when (cal.get(Calendar.DAY_OF_WEEK)) {
+            Calendar.SUNDAY -> "日"
+            Calendar.MONDAY -> "月"
+            Calendar.TUESDAY -> "火"
+            Calendar.WEDNESDAY -> "水"
+            Calendar.THURSDAY -> "木"
+            Calendar.FRIDAY -> "金"
+            Calendar.SATURDAY -> "土"
+            else -> "日"
+        }
+
+        date.text = ("${year}年${month+1}月${day}日（${setDayOfWeek}）")
+        switch1.isChecked = true
+    }
+
+    //時間選択のonSelectedインターフェース実装
+    override fun onSelected(hour: Int, minute: Int) {
+        var setPmAm: String? = null
+        var setHour: String? = null
+        var setMinute: String? = null
+
+        if (hour >= 12) {
+            setPmAm = "午後"
+
+            setHour = (hour-12).toString()
+        } else {
+            setPmAm = "午前"
+
+            setHour = hour.toString()
+        }
+        setMinute = minute.toString()
+
+        push_time.text = ("$setPmAm${setHour}時${setMinute}分")
+
+        switch1.isChecked = true
+    }
+
 
     fun setNotificationTime(view: View) {
         val nextFragment = TimePick()

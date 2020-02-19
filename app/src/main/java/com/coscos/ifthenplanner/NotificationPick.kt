@@ -4,12 +4,26 @@ import android.app.DatePickerDialog
 import android.app.Dialog
 import android.content.Context
 import android.os.Bundle
-import android.util.Log
 import android.widget.DatePicker
 import androidx.fragment.app.DialogFragment
 import java.util.*
 
+
+
 class NotificationPick : DialogFragment(), DatePickerDialog.OnDateSetListener {
+
+    interface OnDateSelectedListener{
+        fun onSelected(year: Int, month: Int, day: Int)
+    }
+    //リスナ-作成
+    private lateinit var listener: OnDateSelectedListener
+
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+        if (context is OnDateSelectedListener){
+            listener = context
+        }
+    }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val c = Calendar.getInstance()
@@ -24,16 +38,13 @@ class NotificationPick : DialogFragment(), DatePickerDialog.OnDateSetListener {
             month,
             day)
 
-
-
         return datePickerDialog
-
-
     }
 
 
-    override fun onDateSet(view: DatePicker?, year: Int, month: Int, dayOfMonth: Int) {
-        Log.i("DatePick", "year: $year, month: ${month+1}, day: $dayOfMonth")
+    override fun onDateSet(view: DatePicker, year: Int, month: Int, dayOfMonth: Int) {
+
+        listener.onSelected(year, month, dayOfMonth)
 
     }
 
