@@ -3,7 +3,6 @@ package com.coscos.ifthenplanner
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.util.Log
 import android.view.*
 import android.widget.Toast
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -17,20 +16,26 @@ import com.coscos.ifthenplanner.Database.AppDatabase
 import com.coscos.ifthenplanner.Database.Plan
 import com.coscos.ifthenplanner.Database.PlanDao
 import kotlinx.coroutines.*
-import java.lang.Exception
+import android.view.Gravity.END
 
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var recyclerView: RecyclerView
 
+    //データベース
     var plans: Array<Plan> = emptyArray()
 
     private val job = Job()
 
+    //RecyclerViewに用いるリストを定義
+    var titleList: MutableList<String> = mutableListOf()
     var ifList: MutableList<String> = mutableListOf()
     var thenList: MutableList<String> = mutableListOf()
+    var colorList: MutableList<Int> = mutableListOf()
 
+
+    //定数を定義
     companion object {
         const val NEW_PLAN: Int = 1
         const val DETAIL_PLAN: Int = 2
@@ -53,14 +58,13 @@ class MainActivity : AppCompatActivity() {
         //データベースからデータを取得
         CoroutineScope(Dispatchers.Main + job).launch {
             plans = startDB().loadAllPlan()
-            Log.e("arraySize", "size is ${plans}")
 
             if (plans.isNotEmpty()) {
-                for (i in 0 until plans.size) {
+                for (i in plans.indices) {
+                    titleList.add(plans[i].titleText)
                     ifList.add(plans[i].ifText)
                     thenList.add(plans[i].thenText)
-
-                    Log.i("AsyncFirstCheck", "plan data: ${plans[i]}")
+                    colorList.add(plans[i].colorInt)
                 }
             }
         }
@@ -75,7 +79,7 @@ class MainActivity : AppCompatActivity() {
                 empty_view.visibility = View.GONE
 
                 val viewManager = LinearLayoutManager(applicationContext)
-                val viewAdapter = RecyclerAdapter(applicationContext, ifList, thenList)
+                val viewAdapter = RecyclerAdapter(applicationContext, titleList, ifList, thenList, colorList)
 
                 setAdapterListener(viewAdapter)
 
@@ -85,6 +89,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    //PlanDaoをリターンする関数
     private fun startDB(): PlanDao {
         val db = Room.databaseBuilder(
             applicationContext,
@@ -93,6 +98,7 @@ class MainActivity : AppCompatActivity() {
         return db.PlanDao()
     }
 
+    //データベースの非同期処理
     inner class myAsyncTask: AsyncTask<Void, Void, Void>() {
         override fun doInBackground(vararg params: Void?): Void? {
             val dao = startDB()
@@ -114,17 +120,18 @@ class MainActivity : AppCompatActivity() {
     }
 
 
-    //データベースの処理
+    //データベースの処理。myAsyncTaskを実行
     override fun onStop() {
         super.onStop()
         myAsyncTask().execute()
     }
 
+
+    //ライフサイクルのラスト
     override fun onDestroy() {
         super.onDestroy()
         job.cancel()
     }
-
 
 
     //オプションメニュー作成
@@ -181,12 +188,25 @@ class MainActivity : AppCompatActivity() {
 
             if (resultCode == RESULT_OK) {
                 val ifContent = data!!.getStringExtra("if") as String
-                val thenContent = data!!.getStringExtra("then") as String
+                val thenContent = data.getStringExtra("then") as String
+                val titleContent = data.getStringExtra("title") as String
+                val colorPstn = data.getIntExtra("color", 0)
+                val isNotificationTrue = data.getBooleanExtra("notificationSwitch", false)
+                val yearString = data.getStringExtra("yearString") as String
+                val monthString = data.getStringExtra("monthString") as String
+                val dateString = data.getStringExtra("dateString") as String
+                val dayStringRaw = data.getStringExtra("dayStringRaw") as String
+                val pMRaw = data.getStringExtra("pMRaw") as String
+                val hourString = data.getStringExtra("hourString") as String
+                val minString = data.getStringExtra("minString") as String
 
+                titleList.add(titleContent)
                 ifList.add(ifContent)
                 thenList.add(thenContent)
+                colorList.add(colorPstn)
 
-                addLater = Plan(ifContent, thenContent)
+                addLater = Plan(titleContent, ifContent, thenContent, colorPstn, isNotificationTrue,
+                    yearString, monthString, dateString, dayStringRaw, pMRaw, hourString, minString)
             }
         } else if (requestCode == DETAIL_PLAN) {
 
@@ -219,7 +239,7 @@ class MainActivity : AppCompatActivity() {
             empty_view.visibility = View.GONE
 
             val viewManager = LinearLayoutManager(this)
-            val viewAdapter = RecyclerAdapter(this, ifList, thenList)
+            val viewAdapter = RecyclerAdapter(this, titleList, ifList, thenList, colorList)
 
             setAdapterListener(viewAdapter)
 
@@ -235,6 +255,7 @@ class MainActivity : AppCompatActivity() {
     var changedLaterIF: String? = null
     var changedLaterTHEN: String? = null
 
+    //リサイクラービューのリストのリスナを設定する関数
     private fun setAdapterListener(adapter: RecyclerAdapter) {
         adapter.onItemClick = { pos, view ->
 
@@ -276,6 +297,37 @@ class MainActivity : AppCompatActivity() {
                 true
             }
             pop.show()
+        }
+
+        adapter.onMenuItemClick = { pos, view ->
+            val pop = PopupMenu(applicationContext, view, END)
+            pop.inflate(R.menu.context_menu)
+
+            pop.setOnMenuItemClickListener { item ->
+                when (item.itemId) {
+                    R.id.clear_plan -> {
+                        deleteLater = ifList[pos]
+
+                        ifList.removeAt(pos)
+                        thenList.removeAt(pos)
+                        onActivityResult(RESTART, RESTART, null)
+
+                    }
+                    R.id.edit -> {
+                        val toDetailIntent = Intent(view.context, PlanDetail::class.java)
+
+                        toDetailIntent.putExtra("if", ifList[pos])
+                        toDetailIntent.putExtra("then", thenList[pos])
+                        toDetailIntent.putExtra("position", pos)
+                        toDetailIntent.putExtra("if_it_is_edit", true)
+
+                        startActivityForResult(toDetailIntent, DETAIL_PLAN)
+                    }
+                }
+                true
+            }
+            pop.show()
+
         }
     }
 

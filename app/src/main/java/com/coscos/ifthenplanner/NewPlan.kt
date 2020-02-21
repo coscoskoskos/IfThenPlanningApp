@@ -6,10 +6,7 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import android.view.View
-import android.widget.DatePicker
-import android.widget.Spinner
-import android.widget.Toast
-import android.widget.AdapterView
+import android.widget.*
 import kotlinx.android.synthetic.main.activity_new_plan.*
 import java.text.SimpleDateFormat
 import java.time.LocalDate
@@ -19,10 +16,22 @@ import java.util.*
 class NewPlan : AppCompatActivity(), NotificationPick.OnDateSelectedListener, TimePick.OnTimeSelectedListener {
 
     private var ifContent: String = ""
-    private var thenContent: String? = ""
+    private var thenContent: String = ""
+    private var titelContent: String = ""
+    private var colorTag: Int = 0
+    private var isNotificationTrue: Boolean = false
+    private var notificationInformation: MutableList<String> = mutableListOf()
 
     val spinnerItems: Array<String> = arrayOf("ピンク", "レッド", "ブルー", "パープル", "グリーン", "グレー", "ブラック")
     val spinnerColors: Array<String> = arrayOf("tag_pink", "tag_red", "tag_blue", "tag_purple", "tag_green", "tag_grey", "tag_black")
+
+    lateinit var yearString: String
+    lateinit var monthString: String
+    lateinit var dateString: String
+    lateinit var dayStringRaw: String
+    lateinit var pMRaw: String
+    lateinit var hourString: String
+    lateinit var minString: String
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -48,13 +57,16 @@ class NewPlan : AppCompatActivity(), NotificationPick.OnDateSelectedListener, Ti
             override fun onNothingSelected(parent: AdapterView<*>) {}
         }
 
-        val yearString = SimpleDateFormat("yyyy").format(Date())
-        val monthString = SimpleDateFormat("M").format(Date())
-        val dateString = SimpleDateFormat("d").format(Date())
-        val dayStringRaw = SimpleDateFormat("E").format(Date())
-        val PMRaw = SimpleDateFormat("a").format(Date())
-        val hourString = SimpleDateFormat("K").format(Date())
-        val minString = SimpleDateFormat("m").format(Date())
+        yearString = SimpleDateFormat("yyyy").format(Date())
+        monthString = SimpleDateFormat("M").format(Date())
+        dateString = SimpleDateFormat("d").format(Date())
+        dayStringRaw = SimpleDateFormat("E").format(Date())
+        pMRaw = SimpleDateFormat("a").format(Date())
+        hourString = SimpleDateFormat("K").format(Date())
+        minString = SimpleDateFormat("m").format(Date())
+
+
+        Log.e("nullCheck", "曜日: $dayStringRaw, 午前/午後: $pMRaw")
 
         val dayString = when (dayStringRaw) {
             "Sun" -> "日"
@@ -65,13 +77,13 @@ class NewPlan : AppCompatActivity(), NotificationPick.OnDateSelectedListener, Ti
             "Fri" -> "金"
             "Sat" -> "土"
 
-            else -> null
+            else -> dayStringRaw
         }
 
-        val PMString = when (PMRaw) {
+        val PMString = when (pMRaw) {
             "AM" -> "午前"
             "PM" -> "午後"
-            else -> null
+            else -> pMRaw
         }
 
         date.text = ("${yearString}年${monthString}月${dateString}日（$dayString）")
@@ -99,6 +111,8 @@ class NewPlan : AppCompatActivity(), NotificationPick.OnDateSelectedListener, Ti
         newFragment.show(supportFragmentManager, "notificationPicker")
     }
 
+
+
     //日付選択のonSelectedインターフェース実装
     override fun onSelected(year: Int, month: Int, day: Int) {
         val cal = Calendar.getInstance()
@@ -114,6 +128,11 @@ class NewPlan : AppCompatActivity(), NotificationPick.OnDateSelectedListener, Ti
             Calendar.SATURDAY -> "土"
             else -> "日"
         }
+
+        yearString = year.toString()
+        monthString = month.toString()
+        dateString = day.toString()
+        dayStringRaw = setDayOfWeek
 
         date.text = ("${year}年${month+1}月${day}日（${setDayOfWeek}）")
         switch1.isChecked = true
@@ -136,6 +155,11 @@ class NewPlan : AppCompatActivity(), NotificationPick.OnDateSelectedListener, Ti
         }
         setMinute = minute.toString()
 
+        pMRaw = setPmAm
+        hourString = setHour
+        minString = setMinute
+
+
         push_time.text = ("$setPmAm${setHour}時${setMinute}分")
 
         switch1.isChecked = true
@@ -150,20 +174,50 @@ class NewPlan : AppCompatActivity(), NotificationPick.OnDateSelectedListener, Ti
 
     //作成が完了したときの処理
     private fun doneAdding() {
+        titelContent = findViewById<TextView>(R.id.title_input_text).getText().toString()
         ifContent = findViewById<com.google.android.material.textfield.TextInputEditText>(R.id.if_input_text).getText().toString()
         thenContent = findViewById<com.google.android.material.textfield.TextInputEditText>(R.id.then_input_text).getText().toString()
+        colorTag = spinner.selectedItemPosition
+        isNotificationTrue = switch1.isChecked
 
-        if(ifContent == "") {
+        notificationInformation.add(yearString)
+        notificationInformation.add(monthString)
+        notificationInformation.add(dateString)
+        notificationInformation.add(dayStringRaw)
+        notificationInformation.add(pMRaw)
+        notificationInformation.add(hourString)
+        notificationInformation.add(minString)
+
+        Log.i("intentInfo", "title: $titelContent")
+        Log.i("intentInfo", "if: $ifContent")
+        Log.i("intentInfo", "then: $thenContent")
+        Log.i("intentInfo", "colorPosition: $colorTag")
+        Log.i("intentInfo", "notification: $isNotificationTrue")
+        Log.i("intentInfo", "notificationInfo: $notificationInformation")
+
+        if (titelContent == "") {
+            Toast.makeText(applicationContext, "タイトルを入力してください", Toast.LENGTH_SHORT).show()
+        } else if (ifContent == "") {
             Toast.makeText(applicationContext, "「もし」を入力してください", Toast.LENGTH_SHORT).show()
         } else if(thenContent == "") {
             Toast.makeText(applicationContext, "「...する」を入力してください", Toast.LENGTH_SHORT).show()
         } else {
 
             val intent = Intent(this@NewPlan, MainActivity::class.java)
+            intent.putExtra("title", titelContent)
             intent.putExtra("if", ifContent)
             intent.putExtra("then", thenContent)
+            intent.putExtra("color", colorTag)
+            intent.putExtra("notificationSwitch", isNotificationTrue)
+            intent.putExtra("yearString", yearString)
+            intent.putExtra("monthString", monthString)
+            intent.putExtra("dateString", dateString)
+            intent.putExtra("dayStringRaw", dayStringRaw)
+            intent.putExtra("pMRaw", pMRaw)
+            intent.putExtra("hourString", hourString)
+            intent.putExtra("minString", minString)
 
-            setResult(AppCompatActivity.RESULT_OK, intent)
+            setResult(RESULT_OK, intent)
 
             finish()
         }
