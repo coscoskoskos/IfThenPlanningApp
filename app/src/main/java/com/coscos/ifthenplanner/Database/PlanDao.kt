@@ -5,13 +5,15 @@ import androidx.room.*
 @Dao
 interface PlanDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun insertUsers(vararg plan: Plan)
+    fun insertPlan(vararg plan: Plan)
 
-    @Query("DELETE FROM plans WHERE ifText = :ifContent")
-    fun deletePlan(ifContent: String)
+    @Query("DELETE FROM plans WHERE madeAt = :madeWhen")
+    fun deletePlan(madeWhen: String)
 
-    @Query("UPDATE plans SET ifText = :ifContent, thenText = :thenContent WHERE ifText = :ifChanged AND thenText = :thenChanged")
-    fun updatePlan(ifChanged: String, thenChanged: String, ifContent: String, thenContent: String)
+    @Query("UPDATE plans SET titleText = :titleContent, ifText = :ifContent, thenText = :thenContent, colorInt = :colorContent, isNotificationTrue = :notificationContent, yearString = :yearContent, monthString = :monthContent, dateString = :dateContent, dayStringRaw = :dayContent, pMRaw = :pMContent, hourString = :hourContent, minString = :minContent WHERE madeAt = :madeWhen")
+    fun updatePlan(titleContent: String, ifContent: String, thenContent: String, colorContent: Int,
+                   notificationContent: Boolean, yearContent: String, monthContent: String,
+                   dateContent: String, dayContent: String, pMContent: String, hourContent: String, minContent: String, madeWhen: String)
 
     @Delete
     suspend fun deleteAll(plans: Array<Plan>)

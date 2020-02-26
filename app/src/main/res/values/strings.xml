@@ -11,7 +11,8 @@
     <string name="then_title">...する- Then</string>
     <string name="then_hint">行動をここに入力</string>
     <string name="button_text">保存</string>
-    <string name="button_detail_done">完了する</string>
+    <string name="button_detail_save">変更を保存</string>
+    <string name="button_detail_done">完了にする</string>
     <string name="option_clear">リストを空にする</string>
     <string name="option_share">シェア</string>
     <string name="drw_important">重要</string>

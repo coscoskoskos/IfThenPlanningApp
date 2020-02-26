@@ -7,7 +7,7 @@ import androidx.room.PrimaryKey
 @Entity(tableName = "plans")
 data class Plan (
     val titleText: String,
-    @PrimaryKey val ifText: String,
+    val ifText: String,
     val thenText: String,
     val colorInt: Int,
     val isNotificationTrue: Boolean,
@@ -17,5 +17,6 @@ data class Plan (
     val dayStringRaw: String,
     val pMRaw: String,
     val hourString: String,
-    val minString: String
+    val minString: String,
+    @PrimaryKey val madeAt: String
 )

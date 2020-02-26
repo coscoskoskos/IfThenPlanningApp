@@ -267,7 +267,7 @@
                     android:layout_height="wrap_content"
                     android:layout_alignParentEnd="true"
                     android:onClick="setNotificationTime"
-                    android:text="12時00分"
+                    tools:text="12時00分"
                     android:textSize="16sp" />
 
             </RelativeLayout>

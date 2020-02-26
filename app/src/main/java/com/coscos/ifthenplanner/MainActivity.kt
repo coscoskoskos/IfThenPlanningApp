@@ -9,6 +9,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.activity_main.*
 import android.os.AsyncTask
+import android.util.Log
 import android.widget.PopupMenu
 import androidx.appcompat.app.AlertDialog
 import androidx.room.Room
@@ -17,6 +18,9 @@ import com.coscos.ifthenplanner.Database.Plan
 import com.coscos.ifthenplanner.Database.PlanDao
 import kotlinx.coroutines.*
 import android.view.Gravity.END
+import java.text.DateFormat
+import java.text.SimpleDateFormat
+import java.util.*
 
 
 class MainActivity : AppCompatActivity() {
@@ -34,6 +38,18 @@ class MainActivity : AppCompatActivity() {
     var thenList: MutableList<String> = mutableListOf()
     var colorList: MutableList<Int> = mutableListOf()
 
+    //通知情報のリスト
+    var notificationBooleanList: MutableList<Boolean> = mutableListOf()
+    var yearList: MutableList<String> = mutableListOf()
+    var monthList: MutableList<String> = mutableListOf()
+    var dateList: MutableList<String> = mutableListOf()
+    var dayList: MutableList<String> = mutableListOf()
+    var pMList: MutableList<String> = mutableListOf()
+    var hourList: MutableList<String> = mutableListOf()
+    var minList: MutableList<String> = mutableListOf()
+
+    var madeAtList: MutableList<String> = mutableListOf()
+
 
     //定数を定義
     companion object {
@@ -48,6 +64,9 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        Log.i("test", "notification data: ${SimpleDateFormat("yMdKms", Locale.getDefault()).format(Date())}")
+
 
         //アクションバーの設定
         setSupportActionBar(findViewById(R.id.toolbar))
@@ -65,6 +84,15 @@ class MainActivity : AppCompatActivity() {
                     ifList.add(plans[i].ifText)
                     thenList.add(plans[i].thenText)
                     colorList.add(plans[i].colorInt)
+                    notificationBooleanList.add(plans[i].isNotificationTrue)
+                    yearList.add(plans[i].yearString)
+                    monthList.add(plans[i].monthString)
+                    dateList.add(plans[i].dateString)
+                    dayList.add(plans[i].dayStringRaw)
+                    pMList.add(plans[i].pMRaw)
+                    hourList.add(plans[i].hourString)
+                    minList.add(plans[i].minString)
+                    madeAtList.add(plans[i].madeAt)
                 }
             }
         }
@@ -108,12 +136,14 @@ class MainActivity : AppCompatActivity() {
             }
             if (addLater != null) {
                 //追加する処理
-                dao.insertUsers(addLater!!)
+                dao.insertPlan(addLater!!)
                 addLater = null
             }
             if (changeLaterIF != null) {
-                dao.updatePlan(changedLaterIF!!, changedLaterTHEN!!, changeLaterIF!!, changeLaterTHEN!!)
-                changeLaterIF = null
+                dao.updatePlan(changeLaterTITLE!!, changeLaterIF!!, changeLaterTITLE!!,
+                    changeLaterCOLOR!!, changeLaterNOTIF!!, changeLaterYEAR!!,
+                    changeLaterMONTH!!, changeLaterDATE!!, changeLaterDAY!!,
+                    changeLaterPM!!, changeLaterHOUR!!, changeLaterMIN!!, changeLaterMAL!!)
             }
             return null
         }
@@ -157,8 +187,20 @@ class MainActivity : AppCompatActivity() {
                                 val dao = startDB()
                                 val plans = dao.loadAllPlan()
                                 dao.deleteAll(plans)
+                                titleList.clear()
                                 ifList.clear()
                                 thenList.clear()
+                                colorList.clear()
+                                notificationBooleanList.clear()
+                                yearList.clear()
+                                monthList.clear()
+                                dateList.clear()
+                                dayList.clear()
+                                pMList.clear()
+                                hourList.clear()
+                                minList.clear()
+                                madeAtList.clear()
+
                                 recyclerView.visibility = View.GONE
                                 empty_view.visibility = View.VISIBLE
                             }
@@ -199,35 +241,76 @@ class MainActivity : AppCompatActivity() {
                 val pMRaw = data.getStringExtra("pMRaw") as String
                 val hourString = data.getStringExtra("hourString") as String
                 val minString = data.getStringExtra("minString") as String
+                val madeAt = data.getStringExtra("madeAt") as String
 
                 titleList.add(titleContent)
                 ifList.add(ifContent)
                 thenList.add(thenContent)
                 colorList.add(colorPstn)
+                notificationBooleanList.add(isNotificationTrue)
+                yearList.add(yearString)
+                monthList.add(monthString)
+                dateList.add(dateString)
+                dayList.add(dayStringRaw)
+                pMList.add(pMRaw)
+                hourList.add(hourString)
+                minList.add(minString)
+                madeAtList.add(madeAt)
 
                 addLater = Plan(titleContent, ifContent, thenContent, colorPstn, isNotificationTrue,
-                    yearString, monthString, dateString, dayStringRaw, pMRaw, hourString, minString)
+                    yearString, monthString, dateString, dayStringRaw, pMRaw, hourString, minString, madeAt)
             }
         } else if (requestCode == DETAIL_PLAN) {
 
             if (resultCode == DELETE) {
                 val pstn = data!!.getIntExtra("position", 0)
 
-                deleteLater = ifList[pstn]
-                ifList.removeAt(pstn)
-                thenList.removeAt(pstn)
+                deleteLater = madeAtList[pstn]
+                removeAtPosition(pstn)
+
             } else if (resultCode == EDIT) {
                 val pstn = data!!.getIntExtra("position", 0)
+                val titleContent = data.getStringExtra("title")
                 val ifContent = data.getStringExtra("if")
                 val thenContent = data.getStringExtra("then")
+                val colorContent = data.getIntExtra("color", 0)
+                val notificationContent = data.getBooleanExtra("notification", false)
+                val yearContent = data.getStringExtra("year")
+                val monthContent = data.getStringExtra("month")
+                val dateContent = data.getStringExtra("date")
+                val dayContent = data.getStringExtra("day")
+                val pMContent = data.getStringExtra("PM")
+                val hourContent = data.getStringExtra("hour")
+                val minContent = data.getStringExtra("min")
+                val madeAtContent = data.getStringExtra("madeAt")
 
-                changedLaterIF = ifList[pstn]
-                changedLaterTHEN = thenList[pstn]
+                changeLaterTITLE = titleContent
                 changeLaterIF = ifContent
                 changeLaterTHEN= thenContent
+                changeLaterCOLOR = colorContent
+                changeLaterNOTIF = notificationContent
+                changeLaterYEAR = yearContent
+                changeLaterMONTH = monthContent
+                changeLaterDATE = dateContent
+                changeLaterDAY = dayContent
+                changeLaterPM = pMContent
+                changeLaterHOUR = hourContent
+                changeLaterMIN = minContent
+                changeLaterMAL = madeAtContent
 
+                titleList[pstn] = titleContent!!
                 ifList[pstn] = ifContent!!
                 thenList[pstn] = thenContent!!
+                colorList[pstn] = colorContent
+                notificationBooleanList[pstn] = notificationContent
+                yearList[pstn] = yearContent!!
+                monthList[pstn] = monthContent!!
+                dateList[pstn] = dateContent!!
+                dayList[pstn] = dayContent!!
+                pMList[pstn] = pMContent!!
+                hourList[pstn] = hourContent!!
+                minList[pstn] = minContent!!
+                madeAtList[pstn] = madeAtContent!!
             }
         }
 
@@ -250,10 +333,20 @@ class MainActivity : AppCompatActivity() {
 
     var addLater: Plan? = null
     var deleteLater: String? = null
+    var changeLaterTITLE: String? = null
     var changeLaterIF: String? = null
     var changeLaterTHEN: String? = null
-    var changedLaterIF: String? = null
-    var changedLaterTHEN: String? = null
+    var changeLaterCOLOR: Int? = null
+    var changeLaterNOTIF: Boolean? = null
+    var changeLaterYEAR: String? = null
+    var changeLaterMONTH: String? = null
+    var changeLaterDATE: String? = null
+    var changeLaterDAY: String? = null
+    var changeLaterPM: String? = null
+    var changeLaterHOUR: String? = null
+    var changeLaterMIN: String? = null
+    var changeLaterMAL: String? = null
+
 
     //リサイクラービューのリストのリスナを設定する関数
     private fun setAdapterListener(adapter: RecyclerAdapter) {
@@ -264,11 +357,23 @@ class MainActivity : AppCompatActivity() {
             toDetailIntent.putExtra("if", ifList[pos])
             toDetailIntent.putExtra("then", thenList[pos])
             toDetailIntent.putExtra("position", pos)
+            toDetailIntent.putExtra("title", titleList[pos])
+            toDetailIntent.putExtra("color", colorList[pos])
             toDetailIntent.putExtra("if_it_is_edit", false)
+            toDetailIntent.putExtra("notification", notificationBooleanList[pos])
+            toDetailIntent.putExtra("year", yearList[pos])
+            toDetailIntent.putExtra("month", monthList[pos])
+            toDetailIntent.putExtra("date", dateList[pos])
+            toDetailIntent.putExtra("day", dayList[pos])
+            toDetailIntent.putExtra("PM", pMList[pos])
+            toDetailIntent.putExtra("hour", hourList[pos])
+            toDetailIntent.putExtra("minute", minList[pos])
+            toDetailIntent.putExtra("madeAt", madeAtList[pos])
 
             startActivityForResult(toDetailIntent, DETAIL_PLAN)
         }
 
+        //長押し
         adapter.onLongItemClick = { pos, view ->
             val pop = PopupMenu(applicationContext, view)
             pop.inflate(R.menu.context_menu)
@@ -276,10 +381,9 @@ class MainActivity : AppCompatActivity() {
             pop.setOnMenuItemClickListener { item ->
                 when (item.itemId) {
                     R.id.clear_plan -> {
-                        deleteLater = ifList[pos]
+                        deleteLater = madeAtList[pos]
 
-                        ifList.removeAt(pos)
-                        thenList.removeAt(pos)
+                        removeAtPosition(pos)
                         onActivityResult(RESTART, RESTART, null)
 
                     }
@@ -289,7 +393,18 @@ class MainActivity : AppCompatActivity() {
                         toDetailIntent.putExtra("if", ifList[pos])
                         toDetailIntent.putExtra("then", thenList[pos])
                         toDetailIntent.putExtra("position", pos)
+                        toDetailIntent.putExtra("title", titleList[pos])
+                        toDetailIntent.putExtra("color", colorList[pos])
                         toDetailIntent.putExtra("if_it_is_edit", true)
+                        toDetailIntent.putExtra("notification", notificationBooleanList[pos])
+                        toDetailIntent.putExtra("year", yearList[pos])
+                        toDetailIntent.putExtra("month", monthList[pos])
+                        toDetailIntent.putExtra("date", dateList[pos])
+                        toDetailIntent.putExtra("day", dayList[pos])
+                        toDetailIntent.putExtra("PM", pMList[pos])
+                        toDetailIntent.putExtra("hour", hourList[pos])
+                        toDetailIntent.putExtra("minute", minList[pos])
+                        toDetailIntent.putExtra("madeAt", madeAtList[pos])
 
                         startActivityForResult(toDetailIntent, DETAIL_PLAN)
                     }
@@ -299,6 +414,7 @@ class MainActivity : AppCompatActivity() {
             pop.show()
         }
 
+        //タップ
         adapter.onMenuItemClick = { pos, view ->
             val pop = PopupMenu(applicationContext, view, END)
             pop.inflate(R.menu.context_menu)
@@ -306,10 +422,9 @@ class MainActivity : AppCompatActivity() {
             pop.setOnMenuItemClickListener { item ->
                 when (item.itemId) {
                     R.id.clear_plan -> {
-                        deleteLater = ifList[pos]
+                        deleteLater = madeAtList[pos]
 
-                        ifList.removeAt(pos)
-                        thenList.removeAt(pos)
+                        removeAtPosition(pos)
                         onActivityResult(RESTART, RESTART, null)
 
                     }
@@ -320,6 +435,15 @@ class MainActivity : AppCompatActivity() {
                         toDetailIntent.putExtra("then", thenList[pos])
                         toDetailIntent.putExtra("position", pos)
                         toDetailIntent.putExtra("if_it_is_edit", true)
+                        toDetailIntent.putExtra("notification", notificationBooleanList[pos])
+                        toDetailIntent.putExtra("year", yearList[pos])
+                        toDetailIntent.putExtra("month", monthList[pos])
+                        toDetailIntent.putExtra("date", dateList[pos])
+                        toDetailIntent.putExtra("day", dayList[pos])
+                        toDetailIntent.putExtra("PM", pMList[pos])
+                        toDetailIntent.putExtra("hour", hourList[pos])
+                        toDetailIntent.putExtra("minute", minList[pos])
+                        toDetailIntent.putExtra("madeAt", madeAtList[pos])
 
                         startActivityForResult(toDetailIntent, DETAIL_PLAN)
                     }
@@ -329,6 +453,23 @@ class MainActivity : AppCompatActivity() {
             pop.show()
 
         }
+    }
+
+    //同じインデックスのデータを消す関数
+    private fun removeAtPosition(pos: Int) {
+        titleList.removeAt(pos)
+        ifList.removeAt(pos)
+        thenList.removeAt(pos)
+        colorList.removeAt(pos)
+        notificationBooleanList.removeAt(pos)
+        yearList.removeAt(pos)
+        monthList.removeAt(pos)
+        dateList.removeAt(pos)
+        dayList.removeAt(pos)
+        pMList.removeAt(pos)
+        hourList.removeAt(pos)
+        minList.removeAt(pos)
+        madeAtList.removeAt(pos)
     }
 
 }

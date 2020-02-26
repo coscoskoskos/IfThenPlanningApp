@@ -20,7 +20,6 @@ class NewPlan : AppCompatActivity(), NotificationPick.OnDateSelectedListener, Ti
     private var titelContent: String = ""
     private var colorTag: Int = 0
     private var isNotificationTrue: Boolean = false
-    private var notificationInformation: MutableList<String> = mutableListOf()
 
     val spinnerItems: Array<String> = arrayOf("ピンク", "レッド", "ブルー", "パープル", "グリーン", "グレー", "ブラック")
     val spinnerColors: Array<String> = arrayOf("tag_pink", "tag_red", "tag_blue", "tag_purple", "tag_green", "tag_grey", "tag_black")
@@ -33,6 +32,8 @@ class NewPlan : AppCompatActivity(), NotificationPick.OnDateSelectedListener, Ti
     lateinit var hourString: String
     lateinit var minString: String
 
+    lateinit var madeAt: String
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -42,7 +43,7 @@ class NewPlan : AppCompatActivity(), NotificationPick.OnDateSelectedListener, Ti
 
         val spinner = findViewById<Spinner>(R.id.spinner)
 
-        var adapter = SpinnerAdapter(this.applicationContext, R.layout.spinner_list, spinnerItems, spinnerColors)
+        val adapter = SpinnerAdapter(this.applicationContext, R.layout.spinner_list, spinnerItems, spinnerColors)
 
         spinner.adapter = adapter
 
@@ -179,21 +180,7 @@ class NewPlan : AppCompatActivity(), NotificationPick.OnDateSelectedListener, Ti
         thenContent = findViewById<com.google.android.material.textfield.TextInputEditText>(R.id.then_input_text).getText().toString()
         colorTag = spinner.selectedItemPosition
         isNotificationTrue = switch1.isChecked
-
-        notificationInformation.add(yearString)
-        notificationInformation.add(monthString)
-        notificationInformation.add(dateString)
-        notificationInformation.add(dayStringRaw)
-        notificationInformation.add(pMRaw)
-        notificationInformation.add(hourString)
-        notificationInformation.add(minString)
-
-        Log.i("intentInfo", "title: $titelContent")
-        Log.i("intentInfo", "if: $ifContent")
-        Log.i("intentInfo", "then: $thenContent")
-        Log.i("intentInfo", "colorPosition: $colorTag")
-        Log.i("intentInfo", "notification: $isNotificationTrue")
-        Log.i("intentInfo", "notificationInfo: $notificationInformation")
+        madeAt = SimpleDateFormat("yMdKms", Locale.getDefault()).format(Date())
 
         if (titelContent == "") {
             Toast.makeText(applicationContext, "タイトルを入力してください", Toast.LENGTH_SHORT).show()
@@ -216,6 +203,7 @@ class NewPlan : AppCompatActivity(), NotificationPick.OnDateSelectedListener, Ti
             intent.putExtra("pMRaw", pMRaw)
             intent.putExtra("hourString", hourString)
             intent.putExtra("minString", minString)
+            intent.putExtra("madeAt", madeAt)
 
             setResult(RESULT_OK, intent)
 
