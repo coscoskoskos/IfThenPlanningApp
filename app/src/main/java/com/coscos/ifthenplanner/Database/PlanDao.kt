@@ -18,6 +18,9 @@ interface PlanDao {
     @Delete
     suspend fun deleteAll(plans: Array<Plan>)
 
+    @Query("SELECT * FROM plans WHERE madeAt = :madeWhen")
+    suspend fun loadAt(madeWhen: String): Plan
+
     @Query("SELECT * FROM plans")
     suspend fun loadAllPlan(): Array<Plan>
 }

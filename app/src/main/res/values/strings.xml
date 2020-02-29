@@ -27,4 +27,8 @@
     <string name="title_hint">プランのタイトル</string>
     <string name="choose_color">カラータグ</string>
     <string name="notification">通知</string>
+    <string name="open_drawer">ドロワーを開く</string>
+    <string name="close_drawer">ドロワーを閉じる</string>
+    <string name="channel_name">通知</string>
+    <string name="channel_description">If Then Planをリマインド</string>
 </resources>

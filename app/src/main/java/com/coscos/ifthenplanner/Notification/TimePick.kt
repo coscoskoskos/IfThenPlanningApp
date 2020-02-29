@@ -1,4 +1,4 @@
-package com.coscos.ifthenplanner
+package com.coscos.ifthenplanner.Notification
 
 import android.app.Dialog
 import android.app.TimePickerDialog

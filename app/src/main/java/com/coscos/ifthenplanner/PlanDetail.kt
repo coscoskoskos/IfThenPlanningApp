@@ -7,8 +7,10 @@ import android.util.Log
 import android.view.View
 import android.widget.Spinner
 import android.widget.TextView
+import com.coscos.ifthenplanner.Adapter.SpinnerAdapter
+import com.coscos.ifthenplanner.Notification.NotificationPick
+import com.coscos.ifthenplanner.Notification.TimePick
 import kotlinx.android.synthetic.main.activity_plan_detail.*
-import java.text.DateFormat.getDateInstance
 import java.util.*
 
 class PlanDetail : AppCompatActivity(), NotificationPick.OnDateSelectedListener,

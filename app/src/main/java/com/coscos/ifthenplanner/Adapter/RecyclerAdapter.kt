@@ -1,17 +1,12 @@
-package com.coscos.ifthenplanner
+package com.coscos.ifthenplanner.Adapter
 
 import android.content.Context
-import android.view.ContextMenu
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.PopupMenu
 import android.widget.TextView
-import androidx.recyclerview.selection.SelectionPredicates
-import androidx.recyclerview.selection.SelectionTracker
-import androidx.recyclerview.selection.StorageStrategy
 import androidx.recyclerview.widget.RecyclerView
-import kotlinx.android.synthetic.main.list_item.view.*
+import com.coscos.ifthenplanner.R
 
 class RecyclerAdapter(private val context: Context,
                       private val titleList: MutableList<String>,

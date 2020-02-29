@@ -1,4 +1,4 @@
-package com.coscos.ifthenplanner
+package com.coscos.ifthenplanner.Adapter
 
 import android.content.Context
 import android.view.LayoutInflater
@@ -6,6 +6,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.BaseAdapter
 import android.widget.TextView
+import com.coscos.ifthenplanner.R
 
 class SpinnerAdapter(context: Context, itemLayoutId: Int, spinnerItems: Array<String>, spinnerColors: Array<String>) : BaseAdapter() {
 
@@ -30,7 +31,10 @@ class SpinnerAdapter(context: Context, itemLayoutId: Int, spinnerItems: Array<St
 
         if (view == null) {
             view = inflater.inflate(layoutId, null)
-            holder = ViewHolder(view.findViewById(R.id.view), view.findViewById(R.id.text_view))
+            holder = ViewHolder(
+                view.findViewById(R.id.view),
+                view.findViewById(R.id.text_view)
+            )
             view.setTag(holder)
         } else {
             holder = view.tag as ViewHolder

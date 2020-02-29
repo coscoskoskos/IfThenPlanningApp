@@ -1,15 +1,16 @@
 package com.coscos.ifthenplanner
 
-import android.app.DatePickerDialog
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.widget.*
+import com.coscos.ifthenplanner.Adapter.SpinnerAdapter
+import com.coscos.ifthenplanner.Notification.NotificationPick
+import com.coscos.ifthenplanner.Notification.TimePick
 import kotlinx.android.synthetic.main.activity_new_plan.*
 import java.text.SimpleDateFormat
-import java.time.LocalDate
 import java.util.*
 
 
@@ -43,7 +44,12 @@ class NewPlan : AppCompatActivity(), NotificationPick.OnDateSelectedListener, Ti
 
         val spinner = findViewById<Spinner>(R.id.spinner)
 
-        val adapter = SpinnerAdapter(this.applicationContext, R.layout.spinner_list, spinnerItems, spinnerColors)
+        val adapter = SpinnerAdapter(
+            this.applicationContext,
+            R.layout.spinner_list,
+            spinnerItems,
+            spinnerColors
+        )
 
         spinner.adapter = adapter
 

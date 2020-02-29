@@ -1,5 +1,10 @@
 package com.coscos.ifthenplanner
 
+import android.app.AlarmManager
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.app.PendingIntent
+import android.content.Context
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
@@ -9,7 +14,8 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.activity_main.*
 import android.os.AsyncTask
-import android.util.Log
+import android.os.Build
+import android.provider.Settings
 import android.widget.PopupMenu
 import androidx.appcompat.app.AlertDialog
 import androidx.room.Room
@@ -18,9 +24,16 @@ import com.coscos.ifthenplanner.Database.Plan
 import com.coscos.ifthenplanner.Database.PlanDao
 import kotlinx.coroutines.*
 import android.view.Gravity.END
-import java.text.DateFormat
-import java.text.SimpleDateFormat
+import androidx.appcompat.app.ActionBarDrawerToggle
+import androidx.core.content.ContextCompat
+import com.coscos.ifthenplanner.Adapter.RecyclerAdapter
+import androidx.core.content.ContextCompat.getSystemService
+import android.icu.lang.UCharacter.GraphemeClusterBreak.T
+import com.coscos.ifthenplanner.Notification.AlarmNotification
 import java.util.*
+import androidx.core.app.ComponentActivity.ExtraData
+import androidx.core.content.ContextCompat.getSystemService
+import android.icu.lang.UCharacter.GraphemeClusterBreak.T
 
 
 class MainActivity : AppCompatActivity() {
@@ -58,6 +71,8 @@ class MainActivity : AppCompatActivity() {
         const val DELETE: Int = 3
         const val RESTART: Int = 4
         const val EDIT: Int = 5
+
+        const val CHANNEL_ID: String = "default"
     }
 
 
@@ -65,11 +80,21 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        Log.i("test", "notification data: ${SimpleDateFormat("yMdKms", Locale.getDefault()).format(Date())}")
-
+        //通知チャネルの作成
+        createNotificationChannel()
 
         //アクションバーの設定
         setSupportActionBar(findViewById(R.id.toolbar))
+
+        val toggle = ActionBarDrawerToggle(
+            this,
+            drawer_layout,
+            toolbar,
+            R.string.open_drawer,
+            R.string.close_drawer
+        )
+        drawer_layout.addDrawerListener(toggle)
+        toggle.syncState()
 
         //リサイクラービューを取得
         recyclerView = findViewById(R.id.recycler_view)
@@ -98,7 +123,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         CoroutineScope(Dispatchers.Main + job).launch {
-            delay(100)
+            delay(50)
             if (ifList.isEmpty()) {
                 recyclerView.visibility = View.GONE
                 empty_view.visibility = View.VISIBLE
@@ -107,7 +132,13 @@ class MainActivity : AppCompatActivity() {
                 empty_view.visibility = View.GONE
 
                 val viewManager = LinearLayoutManager(applicationContext)
-                val viewAdapter = RecyclerAdapter(applicationContext, titleList, ifList, thenList, colorList)
+                val viewAdapter = RecyclerAdapter(
+                    applicationContext,
+                    titleList,
+                    ifList,
+                    thenList,
+                    colorList
+                )
 
                 setAdapterListener(viewAdapter)
 
@@ -127,7 +158,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     //データベースの非同期処理
-    inner class myAsyncTask: AsyncTask<Void, Void, Void>() {
+    inner class myAsyncTask : AsyncTask<Void, Void, Void>() {
         override fun doInBackground(vararg params: Void?): Void? {
             val dao = startDB()
             if (deleteLater != null) {
@@ -140,10 +171,12 @@ class MainActivity : AppCompatActivity() {
                 addLater = null
             }
             if (changeLaterIF != null) {
-                dao.updatePlan(changeLaterTITLE!!, changeLaterIF!!, changeLaterTITLE!!,
+                dao.updatePlan(
+                    changeLaterTITLE!!, changeLaterIF!!, changeLaterTITLE!!,
                     changeLaterCOLOR!!, changeLaterNOTIF!!, changeLaterYEAR!!,
                     changeLaterMONTH!!, changeLaterDATE!!, changeLaterDAY!!,
-                    changeLaterPM!!, changeLaterHOUR!!, changeLaterMIN!!, changeLaterMAL!!)
+                    changeLaterPM!!, changeLaterHOUR!!, changeLaterMIN!!, changeLaterMAL!!
+                )
             }
             return null
         }
@@ -173,9 +206,9 @@ class MainActivity : AppCompatActivity() {
 
     //オプションメニューアイテムのリスナ
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        return when(item.itemId) {
+        return when (item.itemId) {
             R.id.clear_all -> {
-                if(ifList.isEmpty()) {
+                if (ifList.isEmpty()) {
                     Toast.makeText(applicationContext, "削除するプランがありません", Toast.LENGTH_SHORT).show()
 
                 } else {
@@ -218,6 +251,27 @@ class MainActivity : AppCompatActivity() {
 
     //fabのオンクリック
     fun addPlan(view: View) {
+
+        val calendar1 = Calendar.getInstance()
+        calendar1.setTimeInMillis(System.currentTimeMillis())
+
+        calendar1.add(Calendar.SECOND, 1)
+        val notificationIntent = Intent(applicationContext, AlarmNotification::class.java)
+        notificationIntent.putExtra("notificationID", /*madeAtList[0].toInt()*/ 0)
+        notificationIntent.putExtra("content", "テスト")
+
+        val pending = PendingIntent.getBroadcast(
+            applicationContext, 10, notificationIntent, 0
+        )
+
+        val am: AlarmManager = getSystemService(ALARM_SERVICE) as AlarmManager
+        am.setExact(AlarmManager.RTC_WAKEUP, calendar1.timeInMillis, pending)
+
+
+
+
+
+
         val intent = Intent(this@MainActivity, NewPlan::class.java)
         startActivityForResult(intent, NEW_PLAN)
     }
@@ -257,8 +311,21 @@ class MainActivity : AppCompatActivity() {
                 minList.add(minString)
                 madeAtList.add(madeAt)
 
-                addLater = Plan(titleContent, ifContent, thenContent, colorPstn, isNotificationTrue,
-                    yearString, monthString, dateString, dayStringRaw, pMRaw, hourString, minString, madeAt)
+                addLater = Plan(
+                    titleContent,
+                    ifContent,
+                    thenContent,
+                    colorPstn,
+                    isNotificationTrue,
+                    yearString,
+                    monthString,
+                    dateString,
+                    dayStringRaw,
+                    pMRaw,
+                    hourString,
+                    minString,
+                    madeAt
+                )
             }
         } else if (requestCode == DETAIL_PLAN) {
 
@@ -286,7 +353,7 @@ class MainActivity : AppCompatActivity() {
 
                 changeLaterTITLE = titleContent
                 changeLaterIF = ifContent
-                changeLaterTHEN= thenContent
+                changeLaterTHEN = thenContent
                 changeLaterCOLOR = colorContent
                 changeLaterNOTIF = notificationContent
                 changeLaterYEAR = yearContent
@@ -322,7 +389,13 @@ class MainActivity : AppCompatActivity() {
             empty_view.visibility = View.GONE
 
             val viewManager = LinearLayoutManager(this)
-            val viewAdapter = RecyclerAdapter(this, titleList, ifList, thenList, colorList)
+            val viewAdapter = RecyclerAdapter(
+                this,
+                titleList,
+                ifList,
+                thenList,
+                colorList
+            )
 
             setAdapterListener(viewAdapter)
 
@@ -470,6 +543,23 @@ class MainActivity : AppCompatActivity() {
         hourList.removeAt(pos)
         minList.removeAt(pos)
         madeAtList.removeAt(pos)
+    }
+
+    private fun createNotificationChannel() {
+        // Create the NotificationChannel, but only on API 26+ because
+        // the NotificationChannel class is new and not in the support library
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val name = getString(R.string.channel_name)
+            val descriptionText = getString(R.string.channel_description)
+            val importance = NotificationManager.IMPORTANCE_DEFAULT
+            val channel = NotificationChannel(CHANNEL_ID, name, importance).apply {
+                description = descriptionText
+            }
+            // Register the channel with the system
+            val notificationManager: NotificationManager =
+                getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+            notificationManager.createNotificationChannel(channel)
+        }
     }
 
 }
