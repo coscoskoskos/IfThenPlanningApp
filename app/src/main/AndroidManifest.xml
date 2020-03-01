@@ -3,6 +3,7 @@
     package="com.coscos.ifthenplanner">
 
     <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT" />
 
     <application
         android:allowBackup="true"
@@ -11,11 +12,12 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
+        <activity android:name=".Option"></activity>
         <activity
             android:name=".Reminder"
             android:excludeFromRecents="true"
             android:launchMode="singleTask"
-            android:taskAffinity=""></activity>
+            android:taskAffinity="" />
         <activity android:name=".PlanDetail" />
         <activity android:name=".NewPlan" />
         <activity

@@ -69,7 +69,8 @@ class NewPlan : AppCompatActivity(), NotificationPick.OnDateSelectedListener, Ti
         dateString = SimpleDateFormat("d").format(Date())
         dayStringRaw = SimpleDateFormat("E").format(Date())
         pMRaw = SimpleDateFormat("a").format(Date())
-        hourString = SimpleDateFormat("K").format(Date())
+        val hourText = SimpleDateFormat("K").format(Date()).toInt() + 1
+        hourString = hourText.toString()
         minString = SimpleDateFormat("m").format(Date())
 
 
@@ -94,7 +95,7 @@ class NewPlan : AppCompatActivity(), NotificationPick.OnDateSelectedListener, Ti
         }
 
         date.text = ("${yearString}年${monthString}月${dateString}日（$dayString）")
-        push_time.text = ("$PMString${hourString.toInt()+1}時${minString}分")
+        push_time.text = ("$PMString${hourString}時${minString}分")
 
     }
 
@@ -137,16 +138,18 @@ class NewPlan : AppCompatActivity(), NotificationPick.OnDateSelectedListener, Ti
         }
 
         yearString = year.toString()
-        monthString = month.toString()
+        monthString = (month+1).toString()
         dateString = day.toString()
         dayStringRaw = setDayOfWeek
 
-        date.text = ("${year}年${month+1}月${day}日（${setDayOfWeek}）")
+        date.text = ("${year}年${month}月${day}日（${setDayOfWeek}）")
         switch1.isChecked = true
     }
 
     //時間選択のonSelectedインターフェース実装
     override fun onSelected(hour: Int, minute: Int) {
+        Log.i("hour", "hour: $hour")
+
         var setPmAm: String? = null
         var setHour: String? = null
         var setMinute: String? = null
@@ -186,7 +189,7 @@ class NewPlan : AppCompatActivity(), NotificationPick.OnDateSelectedListener, Ti
         thenContent = findViewById<com.google.android.material.textfield.TextInputEditText>(R.id.then_input_text).getText().toString()
         colorTag = spinner.selectedItemPosition
         isNotificationTrue = switch1.isChecked
-        madeAt = SimpleDateFormat("yMdKms", Locale.getDefault()).format(Date())
+        madeAt = SimpleDateFormat("MdKms", Locale.getDefault()).format(Date()).toString()
 
         if (titelContent == "") {
             Toast.makeText(applicationContext, "タイトルを入力してください", Toast.LENGTH_SHORT).show()

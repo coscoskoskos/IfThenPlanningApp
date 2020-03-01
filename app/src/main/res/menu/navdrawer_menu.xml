@@ -1,13 +1,62 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <item
-        android:icon="@drawable/ic_star_white_24dp"
-        android:title="@string/drw_important" />
-    <item
-        android:icon="@drawable/ic_delete_white_24dp"
-        android:title="@string/drw_trash" />
-    <item
-        android:icon="@drawable/ic_settings_white_24dp"
-        android:title="@string/drw_setting" />
+    <group android:checkableBehavior="single">
+        <item
+            android:id="@+id/all_plan"
+            android:icon="@drawable/ic_all_24dp"
+            android:title="@string/toolbar_all" />
+    </group>
+
+    <group
+        android:id="@+id/sort"
+        android:checkableBehavior="none">
+
+        <item android:title="@string/drw_tag">
+            <menu>
+                <group android:checkableBehavior="single">
+                    <item
+                        android:id="@+id/pink"
+                        android:icon="@drawable/tag_pink"
+                        android:title="@string/drw_pink" />
+                    <item
+                        android:id="@+id/red"
+                        android:icon="@drawable/tag_red"
+                        android:title="@string/drw_red" />
+                    <item
+                        android:id="@+id/blue"
+                        android:icon="@drawable/tag_blue"
+                        android:title="@string/drw_blue" />
+                    <item
+                        android:id="@+id/purple"
+                        android:icon="@drawable/tag_purple"
+                        android:title="@string/drw_purple" />
+                    <item
+                        android:id="@+id/green"
+                        android:icon="@drawable/tag_green"
+                        android:title="@string/drw_green" />
+                    <item
+                        android:id="@+id/grey"
+                        android:icon="@drawable/tag_grey"
+                        android:title="@string/drw_grey" />
+                    <item
+                        android:id="@+id/black"
+                        android:icon="@drawable/tag_black"
+                        android:title="@string/drw_black" />
+
+                </group>
+            </menu>
+        </item>
+    </group>
+
+
+    <group
+        android:id="@+id/setting_group"
+        android:checkableBehavior="none">
+        <item
+            android:id="@+id/setting"
+            android:icon="@drawable/ic_settings_white_24dp"
+            android:title="@string/drw_setting" />
+    </group>
+
 </menu>

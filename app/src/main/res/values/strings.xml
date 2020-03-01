@@ -18,6 +18,14 @@
     <string name="drw_important">重要</string>
     <string name="drw_trash">ゴミ箱</string>
     <string name="drw_setting">設定</string>
+    <string name="drw_tag">タグ</string>
+    <string name="drw_pink">ピンク</string>
+    <string name="drw_red">レッド</string>
+    <string name="drw_blue">ブルー</string>
+    <string name="drw_purple">パープル</string>
+    <string name="drw_green">グリーン</string>
+    <string name="drw_grey">グレー</string>
+    <string name="drw_black">ブラック</string>
     <string name="ok">OK</string>
     <string name="cancel">CANCEL</string>
     <string name="clear">削除</string>
@@ -31,4 +39,6 @@
     <string name="close_drawer">ドロワーを閉じる</string>
     <string name="channel_name">通知</string>
     <string name="channel_description">If Then Planをリマインド</string>
+    <string name="ask_if_done">完了しましたか？</string>
+    <string name="toolbar_all">すべてのプラン</string>
 </resources>

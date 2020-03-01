@@ -1,11 +1,10 @@
 package com.coscos.ifthenplanner
 
-import android.app.AlarmManager
-import android.app.NotificationChannel
-import android.app.NotificationManager
-import android.app.PendingIntent
+import android.app.*
 import android.content.Context
 import android.content.Intent
+import android.graphics.ColorFilter
+import android.graphics.PorterDuff
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.*
@@ -15,7 +14,6 @@ import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.activity_main.*
 import android.os.AsyncTask
 import android.os.Build
-import android.provider.Settings
 import android.widget.PopupMenu
 import androidx.appcompat.app.AlertDialog
 import androidx.room.Room
@@ -25,18 +23,15 @@ import com.coscos.ifthenplanner.Database.PlanDao
 import kotlinx.coroutines.*
 import android.view.Gravity.END
 import androidx.appcompat.app.ActionBarDrawerToggle
-import androidx.core.content.ContextCompat
 import com.coscos.ifthenplanner.Adapter.RecyclerAdapter
-import androidx.core.content.ContextCompat.getSystemService
-import android.icu.lang.UCharacter.GraphemeClusterBreak.T
 import com.coscos.ifthenplanner.Notification.AlarmNotification
 import java.util.*
-import androidx.core.app.ComponentActivity.ExtraData
-import androidx.core.content.ContextCompat.getSystemService
-import android.icu.lang.UCharacter.GraphemeClusterBreak.T
+import android.util.Log
+import androidx.core.view.GravityCompat
+import com.google.android.material.navigation.NavigationView
 
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
 
     private lateinit var recyclerView: RecyclerView
 
@@ -93,6 +88,8 @@ class MainActivity : AppCompatActivity() {
             R.string.open_drawer,
             R.string.close_drawer
         )
+        nav_view.itemIconTintList = null
+        nav_view.setNavigationItemSelectedListener(this)
         drawer_layout.addDrawerListener(toggle)
         toggle.syncState()
 
@@ -123,7 +120,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         CoroutineScope(Dispatchers.Main + job).launch {
-            delay(50)
+            delay(100)
             if (ifList.isEmpty()) {
                 recyclerView.visibility = View.GONE
                 empty_view.visibility = View.VISIBLE
@@ -148,6 +145,115 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    //カラータグによるソートの関数
+    fun colorSort(colorInt: Int) {
+        if (colorList.isNotEmpty()) {
+
+            val sortedTitleList: MutableList<String> = mutableListOf()
+            val sortedIfList: MutableList<String> = mutableListOf()
+            val sortedThenList: MutableList<String> = mutableListOf()
+            val sortedColorList: MutableList<Int> = mutableListOf()
+
+            for (i in colorList.indices) {
+                if (colorList[i] == colorInt) {
+                    sortedTitleList.add(titleList[i])
+                    sortedIfList.add(ifList[i])
+                    sortedThenList.add(thenList[i])
+                    sortedColorList.add(colorInt)
+                }
+            }
+
+            val viewManager = LinearLayoutManager(applicationContext)
+            val viewAdapter = RecyclerAdapter(
+                applicationContext,
+                sortedTitleList,
+                sortedIfList,
+                sortedThenList,
+                sortedColorList
+            )
+
+            setAdapterListener(viewAdapter)
+
+            recyclerView.layoutManager = viewManager
+            recyclerView.adapter = viewAdapter
+        }
+    }
+
+    //リマインダーから戻ってきたときの処理
+    override fun onRestart() {
+        super.onRestart()
+
+        if (isRestart) {
+            //いったん削除
+            titleList.clear()
+            ifList.clear()
+            thenList.clear()
+            colorList.clear()
+            notificationBooleanList.clear()
+            yearList.clear()
+            monthList.clear()
+            dateList.clear()
+            dayList.clear()
+            pMList.clear()
+            hourList.clear()
+            minList.clear()
+            for (i in madeAtList.indices) {
+                deleteNotification(i)
+            }
+            madeAtList.clear()
+
+            Log.i("done check", "onRestart")
+            CoroutineScope(Dispatchers.Main + job).launch {
+                plans = startDB().loadAllPlan()
+
+                if (plans.isNotEmpty()) {
+                    for (i in plans.indices) {
+                        titleList.add(plans[i].titleText)
+                        ifList.add(plans[i].ifText)
+                        thenList.add(plans[i].thenText)
+                        colorList.add(plans[i].colorInt)
+                        notificationBooleanList.add(plans[i].isNotificationTrue)
+                        yearList.add(plans[i].yearString)
+                        monthList.add(plans[i].monthString)
+                        dateList.add(plans[i].dateString)
+                        dayList.add(plans[i].dayStringRaw)
+                        pMList.add(plans[i].pMRaw)
+                        hourList.add(plans[i].hourString)
+                        minList.add(plans[i].minString)
+                        madeAtList.add(plans[i].madeAt)
+                    }
+                }
+            }
+
+            CoroutineScope(Dispatchers.Main + job).launch {
+                delay(100)
+                if (ifList.isEmpty()) {
+                    recyclerView.visibility = View.GONE
+                    empty_view.visibility = View.VISIBLE
+                } else {
+                    recyclerView.visibility = View.VISIBLE
+                    empty_view.visibility = View.GONE
+
+                    val viewManager = LinearLayoutManager(applicationContext)
+                    val viewAdapter = RecyclerAdapter(
+                        applicationContext,
+                        titleList,
+                        ifList,
+                        thenList,
+                        colorList
+                    )
+
+                    setAdapterListener(viewAdapter)
+
+                    recyclerView.layoutManager = viewManager
+                    recyclerView.adapter = viewAdapter
+                }
+            }
+        } else {
+            isRestart = true
+        }
+    }
+
     //PlanDaoをリターンする関数
     private fun startDB(): PlanDao {
         val db = Room.databaseBuilder(
@@ -161,13 +267,70 @@ class MainActivity : AppCompatActivity() {
     inner class myAsyncTask : AsyncTask<Void, Void, Void>() {
         override fun doInBackground(vararg params: Void?): Void? {
             val dao = startDB()
+            val deleted = deleteLater
             if (deleteLater != null) {
                 dao.deletePlan(deleteLater.toString())
                 deleteLater = null
+                if (deleted == addLater!!.madeAt) {
+                    addLater = null
+                }
             }
             if (addLater != null) {
                 //追加する処理
                 dao.insertPlan(addLater!!)
+                if (addLater!!.isNotificationTrue) {
+                    val calendar = Calendar.getInstance()
+
+                    val year = addLater!!.yearString.toInt()
+                    val month = addLater!!.monthString.toInt()-1
+                    val date = addLater!!.dateString.toInt()
+                    var hour = addLater!!.hourString.toInt()
+
+                    if (addLater!!.pMRaw == "午後") {
+                        hour += 12
+                    }
+
+                    val minute = addLater!!.minString.toInt()
+
+                    calendar.set(year, month, date, hour, minute, 0)
+
+                    val notificationIntent = Intent(applicationContext, AlarmNotification::class.java)
+
+                    val id = addLater!!.madeAt.toInt()
+                    val title = addLater!!.titleText
+                    val ifText = addLater!!.ifText
+                    val thenText = addLater!!.thenText
+                    val colorInt = addLater!!.colorInt
+                    val monthText = addLater!!.monthString
+                    val dateText = addLater!!.dateString
+                    val dayString = addLater!!.dayStringRaw
+                    val pmString = addLater!!.pMRaw
+                    val hourString = addLater!!.hourString
+                    val minString = addLater!!.minString
+
+                    Log.i("id@MainActivity", "id: $id")
+
+                    notificationIntent.putExtra("notificationID", id)
+                    notificationIntent.putExtra("title", title)
+                    notificationIntent.putExtra("if", ifText)
+                    notificationIntent.putExtra("then", thenText)
+                    notificationIntent.putExtra("month", monthText)
+                    notificationIntent.putExtra("date", dateText)
+                    notificationIntent.putExtra("day", dayString)
+                    notificationIntent.putExtra("PM", pmString)
+                    notificationIntent.putExtra("hour", hourString)
+                    notificationIntent.putExtra("minute", minString)
+                    notificationIntent.putExtra("color", colorInt)
+
+
+                    val pending = PendingIntent.getBroadcast(
+                        applicationContext, id, notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT
+                    )
+
+                    val am: AlarmManager = getSystemService(ALARM_SERVICE) as AlarmManager
+                    am.setExact(AlarmManager.RTC_WAKEUP, calendar.timeInMillis, pending)
+
+                }
                 addLater = null
             }
             if (changeLaterIF != null) {
@@ -177,11 +340,62 @@ class MainActivity : AppCompatActivity() {
                     changeLaterMONTH!!, changeLaterDATE!!, changeLaterDAY!!,
                     changeLaterPM!!, changeLaterHOUR!!, changeLaterMIN!!, changeLaterMAL!!
                 )
+                if (changeLaterNOTIF!!) {
+                    val calendar = Calendar.getInstance()
+
+                    val year = changeLaterYEAR!!.toInt()
+                    val month = changeLaterMONTH!!.toInt()-1
+                    val date = changeLaterDATE!!.toInt()
+                    var hour = changeLaterHOUR!!.toInt()
+                    if (changeLaterPM == "午後") {
+                        hour += 12
+                    }
+                    val minute = changeLaterMIN!!.toInt()
+
+                    calendar.set(year, month, date, hour, minute, 0)
+
+                    val notificationIntent = Intent(applicationContext, AlarmNotification::class.java)
+
+                    val id = changeLaterMAL!!.toInt()
+
+                    notificationIntent.putExtra("notificationID", id)
+                    notificationIntent.putExtra("title", changeLaterTITLE)
+                    notificationIntent.putExtra("if", changeLaterIF)
+                    notificationIntent.putExtra("then", changeLaterTHEN)
+                    notificationIntent.putExtra("month", changeLaterMONTH)
+                    notificationIntent.putExtra("date", changeLaterDATE)
+                    notificationIntent.putExtra("day", changeLaterDAY)
+                    notificationIntent.putExtra("PM", changeLaterPM)
+                    notificationIntent.putExtra("hour", changeLaterHOUR)
+                    notificationIntent.putExtra("minute", changeLaterMIN)
+                    notificationIntent.putExtra("color", changeLaterCOLOR!!)
+
+
+                    val pending = PendingIntent.getBroadcast(
+                        applicationContext, id, notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT
+                    )
+
+                    val am: AlarmManager = getSystemService(ALARM_SERVICE) as AlarmManager
+                    am.setExact(AlarmManager.RTC_WAKEUP, calendar.timeInMillis, pending)
+                }
+                changeLaterIF = null
             }
             return null
         }
     }
 
+    //通知の取り消し
+    fun deleteNotification(pos: Int) {
+        val am: AlarmManager = getSystemService(ALARM_SERVICE) as AlarmManager
+        val id = madeAtList[pos].toInt()
+        val notificationIntent = Intent(applicationContext, AlarmNotification::class.java)
+        val pending = PendingIntent.getBroadcast(
+            applicationContext, id, notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT
+        )
+        pending.cancel()
+        am.cancel(pending)
+
+    }
 
     //データベースの処理。myAsyncTaskを実行
     override fun onStop() {
@@ -196,6 +410,64 @@ class MainActivity : AppCompatActivity() {
         job.cancel()
     }
 
+    override fun onNavigationItemSelected(item: MenuItem): Boolean {
+
+        val id = item.itemId
+        when (id) {
+            R.id.all_plan -> {
+                toolbar.title = getString(R.string.toolbar_all)
+                val viewManager = LinearLayoutManager(applicationContext)
+                val viewAdapter = RecyclerAdapter(
+                    applicationContext,
+                    titleList,
+                    ifList,
+                    thenList,
+                    colorList
+                )
+
+                setAdapterListener(viewAdapter)
+
+                recyclerView.layoutManager = viewManager
+                recyclerView.adapter = viewAdapter
+            }
+            R.id.pink -> {
+                colorSort(0)
+                toolbar.title = getString(R.string.drw_pink)
+            }
+            R.id.red -> {
+                colorSort(1)
+                toolbar.title = getString(R.string.drw_red)
+            }
+            R.id.blue -> {
+                colorSort(2)
+                toolbar.title = getString(R.string.drw_blue)
+            }
+            R.id.purple -> {
+                colorSort(3)
+                toolbar.title = getString(R.string.drw_purple)
+            }
+            R.id.green -> {
+                colorSort(4)
+                toolbar.title = getString(R.string.drw_green)
+            }
+            R.id.grey -> {
+                colorSort(5)
+                toolbar.title = getString(R.string.drw_grey)
+            }
+            R.id.black -> {
+                colorSort(6)
+                toolbar.title = getString(R.string.drw_black)
+            }
+
+            R.id.setting -> {
+
+            }
+        }
+
+        drawer_layout.closeDrawer(GravityCompat.START)
+
+        return true
+    }
 
     //オプションメニュー作成
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -210,7 +482,6 @@ class MainActivity : AppCompatActivity() {
             R.id.clear_all -> {
                 if (ifList.isEmpty()) {
                     Toast.makeText(applicationContext, "削除するプランがありません", Toast.LENGTH_SHORT).show()
-
                 } else {
                     AlertDialog.Builder(this) // FragmentではActivityを取得して生成
                         .setTitle(R.string.clear)
@@ -232,7 +503,15 @@ class MainActivity : AppCompatActivity() {
                                 pMList.clear()
                                 hourList.clear()
                                 minList.clear()
+
+                                for (i in madeAtList.indices) {
+                                    deleteNotification(i)
+                                }
                                 madeAtList.clear()
+
+                                addLater = null
+                                deleteLater = null
+                                changeLaterIF = null
 
                                 recyclerView.visibility = View.GONE
                                 empty_view.visibility = View.VISIBLE
@@ -251,27 +530,6 @@ class MainActivity : AppCompatActivity() {
 
     //fabのオンクリック
     fun addPlan(view: View) {
-
-        val calendar1 = Calendar.getInstance()
-        calendar1.setTimeInMillis(System.currentTimeMillis())
-
-        calendar1.add(Calendar.SECOND, 1)
-        val notificationIntent = Intent(applicationContext, AlarmNotification::class.java)
-        notificationIntent.putExtra("notificationID", /*madeAtList[0].toInt()*/ 0)
-        notificationIntent.putExtra("content", "テスト")
-
-        val pending = PendingIntent.getBroadcast(
-            applicationContext, 10, notificationIntent, 0
-        )
-
-        val am: AlarmManager = getSystemService(ALARM_SERVICE) as AlarmManager
-        am.setExact(AlarmManager.RTC_WAKEUP, calendar1.timeInMillis, pending)
-
-
-
-
-
-
         val intent = Intent(this@MainActivity, NewPlan::class.java)
         startActivityForResult(intent, NEW_PLAN)
     }
@@ -279,6 +537,8 @@ class MainActivity : AppCompatActivity() {
     //メインアクティビティに戻ってきたときの処理
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
+
+        isRestart = false
 
         if (requestCode == NEW_PLAN) {
 
@@ -331,6 +591,8 @@ class MainActivity : AppCompatActivity() {
 
             if (resultCode == DELETE) {
                 val pstn = data!!.getIntExtra("position", 0)
+
+                deleteNotification(pstn)
 
                 deleteLater = madeAtList[pstn]
                 removeAtPosition(pstn)
@@ -404,6 +666,8 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+
+
     var addLater: Plan? = null
     var deleteLater: String? = null
     var changeLaterTITLE: String? = null
@@ -419,6 +683,8 @@ class MainActivity : AppCompatActivity() {
     var changeLaterHOUR: String? = null
     var changeLaterMIN: String? = null
     var changeLaterMAL: String? = null
+
+    var isRestart: Boolean = true
 
 
     //リサイクラービューのリストのリスナを設定する関数
@@ -456,6 +722,7 @@ class MainActivity : AppCompatActivity() {
                     R.id.clear_plan -> {
                         deleteLater = madeAtList[pos]
 
+                        deleteNotification(pos)
                         removeAtPosition(pos)
                         onActivityResult(RESTART, RESTART, null)
 
@@ -497,6 +764,8 @@ class MainActivity : AppCompatActivity() {
                     R.id.clear_plan -> {
                         deleteLater = madeAtList[pos]
 
+                        deleteNotification(pos)
+                        Log.i("adding", "actually DELETING Notification")
                         removeAtPosition(pos)
                         onActivityResult(RESTART, RESTART, null)
 
@@ -545,18 +814,21 @@ class MainActivity : AppCompatActivity() {
         madeAtList.removeAt(pos)
     }
 
+
     private fun createNotificationChannel() {
         // Create the NotificationChannel, but only on API 26+ because
         // the NotificationChannel class is new and not in the support library
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val name = getString(R.string.channel_name)
             val descriptionText = getString(R.string.channel_description)
-            val importance = NotificationManager.IMPORTANCE_DEFAULT
+            val importance = NotificationManager.IMPORTANCE_HIGH
             val channel = NotificationChannel(CHANNEL_ID, name, importance).apply {
                 description = descriptionText
+                enableVibration(true)
+                lockscreenVisibility = Notification.VISIBILITY_PUBLIC
             }
             // Register the channel with the system
-            val notificationManager: NotificationManager =
+            val notificationManager =
                 getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
             notificationManager.createNotificationChannel(channel)
         }

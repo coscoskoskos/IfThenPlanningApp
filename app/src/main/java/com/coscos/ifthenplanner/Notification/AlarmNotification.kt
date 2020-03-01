@@ -1,12 +1,14 @@
 package com.coscos.ifthenplanner.Notification
 
 
+import android.app.Notification
 import android.app.PendingIntent
 import android.app.TaskStackBuilder
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.os.Build
+import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.room.Room
@@ -21,75 +23,55 @@ import kotlinx.coroutines.runBlocking
 class AlarmNotification : BroadcastReceiver() {
 
     override fun onReceive(context: Context?, intent: Intent?) {
-
+        //変数の準備
         val channelId = "default"
-        val title: String = context!!.getString(R.string.app_name)
-        val id = intent!!.getIntExtra("notificationID", 0)
-        val content = intent.getStringExtra("content")
+        val title: String = intent!!.getStringExtra("title")!!
+        val id = intent.getIntExtra("notificationID", 0)
+        val content = intent.getStringExtra("then")
 
-        //var plan: Plan? =null
-
-
-        /*val resultIntent = Intent(context, PlanDetail::class.java)*/
-        /*runBlocking {
-            val db = Room.databaseBuilder(
-                context,
-                AppDatabase::class.java, "planDatabase"
-            ).build()
-            val dao = db.PlanDao()
-            plan = dao.loadAt(id.toString())
-        }*/
-
-        /*plan = Plan("test", "if", "then", 2, true, "2020", "1", "29", "Fri", "PM", "3", "45", "201910151130")
-
-        resultIntent.putExtra("position", 0)
-        resultIntent.putExtra("if_it_is_edit", false)
-        resultIntent.putExtra("title", plan!!.titleText)
-        resultIntent.putExtra("if", plan!!.ifText)
-        resultIntent.putExtra("then", plan!!.thenText)
-        resultIntent.putExtra("color", plan!!.colorInt)
-        resultIntent.putExtra("notification", plan!!.isNotificationTrue)
-        resultIntent.putExtra("year", plan!!.yearString)
-        resultIntent.putExtra("month", plan!!.monthString)
-        resultIntent.putExtra("date", plan!!.dateString)
-        resultIntent.putExtra("day", plan!!.dayStringRaw)
-        resultIntent.putExtra("PM", plan!!.pMRaw)
-        resultIntent.putExtra("hour", plan!!.hourString)
-        resultIntent.putExtra("minute", plan!!.minString)
-        resultIntent.putExtra("madeAt", plan!!.madeAt)*/
-
-        //resultIntent.putExtra()
-        /*val resultPendingIntent: PendingIntent? = TaskStackBuilder.create(context).run {
-            // Add the intent, which inflates the back stack
-            addNextIntentWithParentStack(resultIntent)
-            // Get the PendingIntent containing the entire back stack
-            getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT)
-        }*/
+        val ifText = intent.getStringExtra("if")
+        val monthString = intent.getStringExtra("month")
+        val dateString = intent.getStringExtra("date")
+        val dayStringRaw = intent.getStringExtra("day")
+        val pMRaw = intent.getStringExtra("PM")
+        val hourString = intent.getStringExtra("hour")
+        val minString = intent.getStringExtra("minute")
+        val colorInt = intent.getIntExtra("color", 0)
 
         val notifyIntent = Intent(context, Reminder::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
         }
+
+        notifyIntent.putExtra("title", title)
+        notifyIntent.putExtra("if", ifText)
+        notifyIntent.putExtra("then", content)
+        notifyIntent.putExtra("color", colorInt)
+        notifyIntent.putExtra("month", monthString)
+        notifyIntent.putExtra("date", dateString)
+        notifyIntent.putExtra("day", dayStringRaw)
+        notifyIntent.putExtra("PM", pMRaw)
+        notifyIntent.putExtra("hour", hourString)
+        notifyIntent.putExtra("minute", minString)
+        notifyIntent.putExtra("madeAt", id)
+        
         val notifyPendingIntent = PendingIntent.getActivity(
-            context, 0, notifyIntent, PendingIntent.FLAG_UPDATE_CURRENT
+            context, id, notifyIntent, PendingIntent.FLAG_UPDATE_CURRENT
         )
 
+        val longArray: LongArray = longArrayOf(100, 0, 100, 0, 100, 0)
 
 
-        val notification = NotificationCompat.Builder(context, channelId)
+        val notification = NotificationCompat.Builder(context!!, channelId)
             .setContentTitle(title)
-            .setSmallIcon(com.coscos.ifthenplanner.R.drawable.check_icon)
+            .setSmallIcon(R.drawable.check_icon)
             .setContentText(content)
             .setAutoCancel(true)
-            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setContentIntent(notifyPendingIntent)
-            .setWhen(System.currentTimeMillis())
+            .setCategory(NotificationCompat.CATEGORY_REMINDER)
+            .setVibrate(longArray)
 
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            notification.setChannelId(channelId)
-        }
-
-        with(NotificationManagerCompat.from(context)) {
+        with(NotificationManagerCompat.from(context!!)) {
             notify(id, notification.build())
         }
     }
