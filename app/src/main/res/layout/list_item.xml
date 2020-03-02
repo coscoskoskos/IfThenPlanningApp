@@ -33,7 +33,6 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="32dp"
             android:layout_marginTop="16dp"
-            android:text="プランタイトル- Plan Title"
             android:textSize="16sp"
             android:textColor="@color/textColorPrimary"
             card_view:layout_constraintStart_toStartOf="parent"
@@ -94,6 +93,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/if_statement"
+                    android:textStyle="bold"
                     android:textColor="@color/colorPrimaryDark"
                     android:textSize="16sp" />
 
@@ -109,6 +109,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/then_statement"
+                    android:textStyle="bold"
                     android:textColor="@color/colorPrimaryDark"
                     android:textSize="16sp" />
 

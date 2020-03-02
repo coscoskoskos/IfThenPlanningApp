@@ -31,7 +31,7 @@
     <string name="ok">OK</string>
     <string name="cancel">CANCEL</string>
     <string name="clear">削除</string>
-    <string name="ask_if">すべて削除しますか？</string>
+    <string name="ask_if">作成されたすべてのプランが削除されます。よろしいですか？</string>
     <string name="edit_context">編集する</string>
     <string name="title">タイトル</string>
     <string name="title_hint">プランのタイトル</string>
