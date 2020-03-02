@@ -3,6 +3,7 @@ package com.coscos.ifthenplanner
 import android.app.*
 import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
 import android.graphics.ColorFilter
 import android.graphics.PorterDuff
 import androidx.appcompat.app.AppCompatActivity
@@ -37,6 +38,8 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
     //データベース
     var plans: Array<Plan> = emptyArray()
+    lateinit var dataStore: SharedPreferences
+    private var notificationBoolean: Boolean = false
 
     private val job = Job()
 
@@ -48,6 +51,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
     //通知情報のリスト
     var notificationBooleanList: MutableList<Boolean> = mutableListOf()
+    var alternativeNotifList: MutableList<Boolean> = mutableListOf()
     var yearList: MutableList<String> = mutableListOf()
     var monthList: MutableList<String> = mutableListOf()
     var dateList: MutableList<String> = mutableListOf()
@@ -88,10 +92,33 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             R.string.open_drawer,
             R.string.close_drawer
         )
+        toggle.isDrawerSlideAnimationEnabled = false
         nav_view.itemIconTintList = null
         nav_view.setNavigationItemSelectedListener(this)
+        nav_view.menu.findItem(R.id.all_plan).isChecked = true
         drawer_layout.addDrawerListener(toggle)
         toggle.syncState()
+
+        //sharedPreferencesの読み出し
+        dataStore = getSharedPreferences("DataStore", Context.MODE_PRIVATE)
+        notificationBoolean = dataStore.getBoolean("notificationNullCheck", false)
+        val pink = dataStore.getString("pink", "ピンク")
+        val red = dataStore.getString("red", "レッド")
+        val blue = dataStore.getString("blue", "ブルー")
+        val purple = dataStore.getString("purple", "パープル")
+        val green = dataStore.getString("green", "グリーン")
+        val grey = dataStore.getString("grey", "グレー")
+        val black = dataStore.getString("black", "ブラック")
+
+        nav_view.menu.findItem(R.id.pink).title = pink
+        nav_view.menu.findItem(R.id.red).title = red
+        nav_view.menu.findItem(R.id.blue).title = blue
+        nav_view.menu.findItem(R.id.purple).title = purple
+        nav_view.menu.findItem(R.id.green).title = green
+        nav_view.menu.findItem(R.id.grey).title = grey
+        nav_view.menu.findItem(R.id.black).title = black
+
+
 
         //リサイクラービューを取得
         recyclerView = findViewById(R.id.recycler_view)
@@ -128,19 +155,42 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 recyclerView.visibility = View.VISIBLE
                 empty_view.visibility = View.GONE
 
-                val viewManager = LinearLayoutManager(applicationContext)
-                val viewAdapter = RecyclerAdapter(
-                    applicationContext,
-                    titleList,
-                    ifList,
-                    thenList,
-                    colorList
-                )
+                if (notificationBoolean) {
+                    for (i in ifList.indices) {
+                        alternativeNotifList.add(false)
+                    }
+                    val viewManager = LinearLayoutManager(applicationContext)
+                    val viewAdapter = RecyclerAdapter(
+                        applicationContext,
+                        titleList,
+                        ifList,
+                        thenList,
+                        colorList,
+                        alternativeNotifList
+                    )
 
-                setAdapterListener(viewAdapter)
+                    setAdapterListener(viewAdapter)
 
-                recyclerView.layoutManager = viewManager
-                recyclerView.adapter = viewAdapter
+                    recyclerView.layoutManager = viewManager
+                    recyclerView.adapter = viewAdapter
+
+                } else {
+
+                    val viewManager = LinearLayoutManager(applicationContext)
+                    val viewAdapter = RecyclerAdapter(
+                        applicationContext,
+                        titleList,
+                        ifList,
+                        thenList,
+                        colorList,
+                        notificationBooleanList
+                    )
+
+                    setAdapterListener(viewAdapter)
+
+                    recyclerView.layoutManager = viewManager
+                    recyclerView.adapter = viewAdapter
+                }
             }
         }
     }
@@ -153,35 +203,87 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             val sortedIfList: MutableList<String> = mutableListOf()
             val sortedThenList: MutableList<String> = mutableListOf()
             val sortedColorList: MutableList<Int> = mutableListOf()
+            val sortedNotificationBooleanList: MutableList<Boolean> = mutableListOf()
 
             for (i in colorList.indices) {
                 if (colorList[i] == colorInt) {
                     sortedTitleList.add(titleList[i])
                     sortedIfList.add(ifList[i])
                     sortedThenList.add(thenList[i])
+                    sortedNotificationBooleanList.add(notificationBooleanList[i])
                     sortedColorList.add(colorInt)
                 }
             }
 
-            val viewManager = LinearLayoutManager(applicationContext)
-            val viewAdapter = RecyclerAdapter(
-                applicationContext,
-                sortedTitleList,
-                sortedIfList,
-                sortedThenList,
-                sortedColorList
-            )
+            if (sortedIfList.isEmpty()) {
+                recyclerView.visibility = View.GONE
+                empty_view.visibility = View.VISIBLE
+            } else {
+                recyclerView.visibility = View.VISIBLE
+                empty_view.visibility = View.GONE
 
-            setAdapterListener(viewAdapter)
+                notificationBoolean = dataStore.getBoolean("notificationNullCheck", false)
 
-            recyclerView.layoutManager = viewManager
-            recyclerView.adapter = viewAdapter
+                if (notificationBoolean) {
+                    alternativeNotifList.clear()
+                    for (i in ifList.indices) {
+                        alternativeNotifList.add(false)
+                    }
+                    val viewManager = LinearLayoutManager(applicationContext)
+                    val viewAdapter = RecyclerAdapter(
+                        applicationContext,
+                        sortedTitleList,
+                        sortedIfList,
+                        sortedThenList,
+                        sortedColorList,
+                        alternativeNotifList
+                    )
+
+                    setAdapterListener(viewAdapter)
+
+                    recyclerView.layoutManager = viewManager
+                    recyclerView.adapter = viewAdapter
+                } else {
+                    val viewManager = LinearLayoutManager(applicationContext)
+                    val viewAdapter = RecyclerAdapter(
+                        applicationContext,
+                        sortedTitleList,
+                        sortedIfList,
+                        sortedThenList,
+                        sortedColorList,
+                        sortedNotificationBooleanList
+                    )
+
+                    setAdapterListener(viewAdapter)
+
+                    recyclerView.layoutManager = viewManager
+                    recyclerView.adapter = viewAdapter
+                }
+            }
         }
     }
 
     //リマインダーから戻ってきたときの処理
     override fun onRestart() {
         super.onRestart()
+        val pink = dataStore.getString("pink", "ピンク")
+        val red = dataStore.getString("red", "レッド")
+        val blue = dataStore.getString("blue", "ブルー")
+        val purple = dataStore.getString("purple", "パープル")
+        val green = dataStore.getString("green", "グリーン")
+        val grey = dataStore.getString("grey", "グレー")
+        val black = dataStore.getString("black", "ブラック")
+
+        nav_view.menu.findItem(R.id.pink).title = pink
+        nav_view.menu.findItem(R.id.red).title = red
+        nav_view.menu.findItem(R.id.blue).title = blue
+        nav_view.menu.findItem(R.id.purple).title = purple
+        nav_view.menu.findItem(R.id.green).title = green
+        nav_view.menu.findItem(R.id.grey).title = grey
+        nav_view.menu.findItem(R.id.black).title = black
+
+        nav_view.menu.findItem(R.id.all_plan).isChecked = true
+        toolbar.title = getString(R.string.toolbar_all)
 
         if (isRestart) {
             //いったん削除
@@ -234,19 +336,43 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                     recyclerView.visibility = View.VISIBLE
                     empty_view.visibility = View.GONE
 
-                    val viewManager = LinearLayoutManager(applicationContext)
-                    val viewAdapter = RecyclerAdapter(
-                        applicationContext,
-                        titleList,
-                        ifList,
-                        thenList,
-                        colorList
-                    )
+                    notificationBoolean = dataStore.getBoolean("notificationNullCheck", false)
 
-                    setAdapterListener(viewAdapter)
+                    if (notificationBoolean) {
+                        alternativeNotifList.clear()
+                        for (i in ifList.indices) {
+                            alternativeNotifList.add(false)
+                        }
+                        val viewManager = LinearLayoutManager(applicationContext)
+                        val viewAdapter = RecyclerAdapter(
+                            applicationContext,
+                            titleList,
+                            ifList,
+                            thenList,
+                            colorList,
+                            alternativeNotifList
+                        )
 
-                    recyclerView.layoutManager = viewManager
-                    recyclerView.adapter = viewAdapter
+                        setAdapterListener(viewAdapter)
+
+                        recyclerView.layoutManager = viewManager
+                        recyclerView.adapter = viewAdapter
+                    } else {
+                        val viewManager = LinearLayoutManager(applicationContext)
+                        val viewAdapter = RecyclerAdapter(
+                            applicationContext,
+                            titleList,
+                            ifList,
+                            thenList,
+                            colorList,
+                            notificationBooleanList
+                        )
+
+                        setAdapterListener(viewAdapter)
+
+                        recyclerView.layoutManager = viewManager
+                        recyclerView.adapter = viewAdapter
+                    }
                 }
             }
         } else {
@@ -255,7 +381,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     }
 
     //PlanDaoをリターンする関数
-    private fun startDB(): PlanDao {
+    fun startDB(): PlanDao {
         val db = Room.databaseBuilder(
             applicationContext,
             AppDatabase::class.java, "planDatabase"
@@ -282,7 +408,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                     val calendar = Calendar.getInstance()
 
                     val year = addLater!!.yearString.toInt()
-                    val month = addLater!!.monthString.toInt()-1
+                    val month = addLater!!.monthString.toInt() - 1
                     val date = addLater!!.dateString.toInt()
                     var hour = addLater!!.hourString.toInt()
 
@@ -294,7 +420,8 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
                     calendar.set(year, month, date, hour, minute, 0)
 
-                    val notificationIntent = Intent(applicationContext, AlarmNotification::class.java)
+                    val notificationIntent =
+                        Intent(applicationContext, AlarmNotification::class.java)
 
                     val id = addLater!!.madeAt.toInt()
                     val title = addLater!!.titleText
@@ -324,7 +451,10 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
 
                     val pending = PendingIntent.getBroadcast(
-                        applicationContext, id, notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT
+                        applicationContext,
+                        id,
+                        notificationIntent,
+                        PendingIntent.FLAG_UPDATE_CURRENT
                     )
 
                     val am: AlarmManager = getSystemService(ALARM_SERVICE) as AlarmManager
@@ -344,7 +474,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                     val calendar = Calendar.getInstance()
 
                     val year = changeLaterYEAR!!.toInt()
-                    val month = changeLaterMONTH!!.toInt()-1
+                    val month = changeLaterMONTH!!.toInt() - 1
                     val date = changeLaterDATE!!.toInt()
                     var hour = changeLaterHOUR!!.toInt()
                     if (changeLaterPM == "午後") {
@@ -354,7 +484,8 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
                     calendar.set(year, month, date, hour, minute, 0)
 
-                    val notificationIntent = Intent(applicationContext, AlarmNotification::class.java)
+                    val notificationIntent =
+                        Intent(applicationContext, AlarmNotification::class.java)
 
                     val id = changeLaterMAL!!.toInt()
 
@@ -372,7 +503,10 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
 
                     val pending = PendingIntent.getBroadcast(
-                        applicationContext, id, notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT
+                        applicationContext,
+                        id,
+                        notificationIntent,
+                        PendingIntent.FLAG_UPDATE_CURRENT
                     )
 
                     val am: AlarmManager = getSystemService(ALARM_SERVICE) as AlarmManager
@@ -410,25 +544,122 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         job.cancel()
     }
 
+    //ドロワメニューのリスナー
     override fun onNavigationItemSelected(item: MenuItem): Boolean {
 
         val id = item.itemId
         when (id) {
             R.id.all_plan -> {
                 toolbar.title = getString(R.string.toolbar_all)
-                val viewManager = LinearLayoutManager(applicationContext)
-                val viewAdapter = RecyclerAdapter(
-                    applicationContext,
-                    titleList,
-                    ifList,
-                    thenList,
-                    colorList
-                )
+                if (ifList.isEmpty()) {
+                    recyclerView.visibility = View.GONE
+                    empty_view.visibility = View.VISIBLE
+                } else {
+                    recyclerView.visibility = View.VISIBLE
+                    empty_view.visibility = View.GONE
 
-                setAdapterListener(viewAdapter)
+                    notificationBoolean = dataStore.getBoolean("notificationNullCheck", false)
 
-                recyclerView.layoutManager = viewManager
-                recyclerView.adapter = viewAdapter
+                    if (notificationBoolean) {
+                        alternativeNotifList.clear()
+                        for (i in ifList.indices) {
+                            alternativeNotifList.add(false)
+                        }
+                        val viewManager = LinearLayoutManager(applicationContext)
+                        val viewAdapter = RecyclerAdapter(
+                            applicationContext,
+                            titleList,
+                            ifList,
+                            thenList,
+                            colorList,
+                            alternativeNotifList
+                        )
+
+                        setAdapterListener(viewAdapter)
+
+                        recyclerView.layoutManager = viewManager
+                        recyclerView.adapter = viewAdapter
+                    } else {
+                        val viewManager = LinearLayoutManager(applicationContext)
+                        val viewAdapter = RecyclerAdapter(
+                            applicationContext,
+                            titleList,
+                            ifList,
+                            thenList,
+                            colorList,
+                            notificationBooleanList
+                        )
+
+                        setAdapterListener(viewAdapter)
+
+                        recyclerView.layoutManager = viewManager
+                        recyclerView.adapter = viewAdapter
+                    }
+                }
+            }
+            R.id.reminder -> {
+                toolbar.title = getString(R.string.drw_reminder)
+
+                val sortedTitleList: MutableList<String> = mutableListOf()
+                val sortedIfList: MutableList<String> = mutableListOf()
+                val sortedThenList: MutableList<String> = mutableListOf()
+                val sortedColorList: MutableList<Int> = mutableListOf()
+                val sortedNotificationBooleanList: MutableList<Boolean> = mutableListOf()
+                for (i in notificationBooleanList.indices) {
+                    if (notificationBooleanList[i]) {
+                        sortedTitleList.add(titleList[i])
+                        sortedIfList.add(ifList[i])
+                        sortedThenList.add(thenList[i])
+                        sortedColorList.add(colorList[i])
+                        sortedNotificationBooleanList.add(true)
+                    }
+                }
+                if (sortedNotificationBooleanList.isEmpty()) {
+                    recyclerView.visibility = View.GONE
+                    empty_view.visibility = View.VISIBLE
+
+                } else {
+                    recyclerView.visibility = View.VISIBLE
+                    empty_view.visibility = View.GONE
+
+                    notificationBoolean = dataStore.getBoolean("notificationNullCheck", false)
+
+                    if (notificationBoolean) {
+                        alternativeNotifList.clear()
+                        for (i in ifList.indices) {
+                            alternativeNotifList.add(false)
+                        }
+                        val viewManager = LinearLayoutManager(applicationContext)
+                        val viewAdapter = RecyclerAdapter(
+                            applicationContext,
+                            titleList,
+                            ifList,
+                            thenList,
+                            colorList,
+                            alternativeNotifList
+                        )
+
+                        setAdapterListener(viewAdapter)
+
+                        recyclerView.layoutManager = viewManager
+                        recyclerView.adapter = viewAdapter
+                    } else {
+                        val viewManager = LinearLayoutManager(applicationContext)
+                        val viewAdapter = RecyclerAdapter(
+                            applicationContext,
+                            titleList,
+                            ifList,
+                            thenList,
+                            colorList,
+                            notificationBooleanList
+                        )
+
+                        setAdapterListener(viewAdapter)
+
+                        recyclerView.layoutManager = viewManager
+                        recyclerView.adapter = viewAdapter
+                    }
+                }
             }
             R.id.pink -> {
                 colorSort(0)
@@ -460,7 +691,8 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             }
 
             R.id.setting -> {
-
+                val intent = Intent(this@MainActivity, Option::class.java)
+                startActivity(intent)
             }
         }
 
@@ -650,22 +882,45 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             recyclerView.visibility = View.VISIBLE
             empty_view.visibility = View.GONE
 
-            val viewManager = LinearLayoutManager(this)
-            val viewAdapter = RecyclerAdapter(
-                this,
-                titleList,
-                ifList,
-                thenList,
-                colorList
-            )
+            notificationBoolean = dataStore.getBoolean("notificationNullCheck", false)
 
-            setAdapterListener(viewAdapter)
+            if (notificationBoolean) {
+                alternativeNotifList.clear()
+                for (i in ifList.indices) {
+                    alternativeNotifList.add(false)
+                }
+                val viewManager = LinearLayoutManager(applicationContext)
+                val viewAdapter = RecyclerAdapter(
+                    applicationContext,
+                    titleList,
+                    ifList,
+                    thenList,
+                    colorList,
+                    alternativeNotifList
+                )
 
-            recyclerView.layoutManager = viewManager
-            recyclerView.adapter = viewAdapter
+                setAdapterListener(viewAdapter)
+
+                recyclerView.layoutManager = viewManager
+                recyclerView.adapter = viewAdapter
+            } else {
+                val viewManager = LinearLayoutManager(applicationContext)
+                val viewAdapter = RecyclerAdapter(
+                    applicationContext,
+                    titleList,
+                    ifList,
+                    thenList,
+                    colorList,
+                    notificationBooleanList
+                )
+
+                setAdapterListener(viewAdapter)
+
+                recyclerView.layoutManager = viewManager
+                recyclerView.adapter = viewAdapter
+            }
         }
     }
-
 
 
     var addLater: Plan? = null

@@ -185,6 +185,7 @@
             app:layout_constraintTop_toBottomOf="@id/grey_line3">
 
             <TextView
+                android:id="@+id/textView"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="12dp"
@@ -198,6 +199,7 @@
                 android:id="@+id/spinner"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:maxWidth="300dp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
 
@@ -267,8 +269,8 @@
                     android:layout_height="wrap_content"
                     android:layout_alignParentEnd="true"
                     android:onClick="setNotificationTime"
-                    tools:text="12時00分"
-                    android:textSize="16sp" />
+                    android:textSize="16sp"
+                    tools:text="12時00分" />
 
             </RelativeLayout>
         </LinearLayout>

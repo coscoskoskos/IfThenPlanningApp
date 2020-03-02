@@ -4,6 +4,7 @@ import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.coscos.ifthenplanner.R
@@ -12,7 +13,8 @@ class RecyclerAdapter(private val context: Context,
                       private val titleList: MutableList<String>,
                       private val ifList: MutableList<String>,
                       private val thenList: MutableList<String>,
-                      private val colorList: MutableList<Int>) : RecyclerView.Adapter<RecyclerAdapter.ViewHolder>() {
+                      private val colorList: MutableList<Int>,
+                      private val notificationList: MutableList<Boolean>) : RecyclerView.Adapter<RecyclerAdapter.ViewHolder>() {
 
     val spinnerColors: Array<String> = arrayOf("tag_pink", "tag_red", "tag_blue", "tag_purple", "tag_green", "tag_grey", "tag_black")
 
@@ -30,6 +32,12 @@ class RecyclerAdapter(private val context: Context,
             it.ifStatement.text = ifList[position]
             it.thenStatement.text= thenList[position]
             it.colorTag.setBackgroundResource(backgroundId[colorList[position]])
+
+            if (notificationList[position]) {
+                it.notification.visibility = View.VISIBLE
+            } else {
+                it.notification.visibility = View.INVISIBLE
+            }
 
             it.textViewOptions.setOnClickListener{
 
@@ -70,6 +78,7 @@ class RecyclerAdapter(private val context: Context,
         val colorTag: View = itemView.findViewById(R.id.color_tag)
         val titleStatement: TextView = itemView.findViewById(R.id.plan_title)
         val textViewOptions:TextView = itemView.findViewById(R.id.textViewOptions)
+        val notification: ImageView = itemView.findViewById(R.id.notification_bell)
 
         init {
             itemView.setOnClickListener(this)

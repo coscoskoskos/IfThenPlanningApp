@@ -15,6 +15,9 @@ interface PlanDao {
                    notificationContent: Boolean, yearContent: String, monthContent: String,
                    dateContent: String, dayContent: String, pMContent: String, hourContent: String, minContent: String, madeWhen: String)
 
+    @Query("UPDATE plans SET isNotificationTrue = :trueOrfalse")
+    suspend fun deleteNotification(trueOrfalse: Boolean)
+
     @Delete
     suspend fun deleteAll(plans: Array<Plan>)
 

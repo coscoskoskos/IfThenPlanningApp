@@ -39,6 +39,15 @@
             card_view:layout_constraintStart_toStartOf="parent"
             card_view:layout_constraintTop_toTopOf="parent" />
 
+        <ImageView
+            android:id="@+id/notification_bell"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="14dp"
+            android:src="@drawable/ic_notifications_black_24dp"
+            card_view:layout_constraintEnd_toStartOf="@id/textViewOptions"
+            card_view:layout_constraintTop_toTopOf="parent"/>
+
         <TextView
             android:id="@+id/textViewOptions"
             android:layout_width="50dp"

@@ -6,4 +6,149 @@
     android:layout_height="match_parent"
     tools:context=".Option">
 
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:theme="@style/ThemeOverlay.AppCompat.ActionBar"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:title="@string/option_toolbar" />
+
+    <LinearLayout
+        android:id="@+id/plan_linear_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:orientation="vertical"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/toolbar">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="40dp"
+            android:layout_marginBottom="8dp"
+            android:text="@string/option_plan"
+            android:textColor="@color/colorPrimaryDark"
+            android:textSize="18sp" />
+
+        <TextView
+            android:id="@+id/option_clear_all"
+            android:onClick="clearAll"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:paddingStart="40dp"
+            android:paddingTop="16dp"
+            android:paddingEnd="40dp"
+            android:paddingBottom="16dp"
+            android:text="@string/option_clear_all"
+            android:textColor="@color/textColorPrimary"
+            android:textSize="18sp"
+            android:foreground="?android:attr/selectableItemBackground"/>
+
+        <TextView
+            android:onClick="tagOption"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:paddingStart="40dp"
+            android:paddingTop="16dp"
+            android:paddingEnd="40dp"
+            android:paddingBottom="16dp"
+            android:text="@string/option_tag"
+            android:textColor="@color/textColorPrimary"
+            android:textSize="18sp"
+            android:foreground="?android:attr/selectableItemBackground"/>
+
+    </LinearLayout>
+
+    <View
+        android:id="@+id/line_between"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginTop="8dp"
+        android:background="@drawable/line_style"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/plan_linear_layout" />
+
+    <LinearLayout
+        android:id="@+id/reminder_linear_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:orientation="vertical"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/plan_linear_layout">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="40dp"
+            android:layout_marginBottom="8dp"
+            android:text="@string/drw_reminder"
+            android:textColor="@color/colorPrimaryDark"
+            android:textSize="18sp" />
+
+        <LinearLayout
+            android:onClick="reminderNull"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:foreground="?android:attr/selectableItemBackground">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:paddingStart="40dp"
+                android:paddingTop="16dp"
+                android:paddingEnd="40dp"
+                android:paddingBottom="16dp"
+                android:text="@string/option_reminder_null"
+                android:textColor="@color/textColorPrimary"
+                android:textSize="18sp" />
+            <Switch
+                android:id="@+id/switch1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="24dp"
+                app:switchMinWidth="100dp" />
+        </LinearLayout>
+
+        <TextView
+            android:onClick="clearReminder"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:paddingStart="40dp"
+            android:paddingTop="16dp"
+            android:paddingEnd="40dp"
+            android:paddingBottom="16dp"
+            android:text="@string/option_reminder_clear"
+            android:textColor="@color/textColorPrimary"
+            android:textSize="18sp"
+            android:foreground="?android:attr/selectableItemBackground"/>
+
+        <TextView
+            android:onClick="notificationOption"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:paddingStart="40dp"
+            android:paddingTop="16dp"
+            android:paddingEnd="40dp"
+            android:paddingBottom="16dp"
+            android:text="@string/option_notification"
+            android:textColor="@color/textColorPrimary"
+            android:textSize="18sp"
+            android:foreground="?android:attr/selectableItemBackground"/>
+
+    </LinearLayout>
+
 </androidx.constraintlayout.widget.ConstraintLayout>

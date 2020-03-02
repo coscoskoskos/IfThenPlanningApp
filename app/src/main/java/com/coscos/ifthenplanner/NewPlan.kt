@@ -1,5 +1,6 @@
 package com.coscos.ifthenplanner
 
+import android.content.Context
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
@@ -9,6 +10,7 @@ import android.widget.*
 import com.coscos.ifthenplanner.Adapter.SpinnerAdapter
 import com.coscos.ifthenplanner.Notification.NotificationPick
 import com.coscos.ifthenplanner.Notification.TimePick
+import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.activity_new_plan.*
 import java.text.SimpleDateFormat
 import java.util.*
@@ -22,7 +24,6 @@ class NewPlan : AppCompatActivity(), NotificationPick.OnDateSelectedListener, Ti
     private var colorTag: Int = 0
     private var isNotificationTrue: Boolean = false
 
-    val spinnerItems: Array<String> = arrayOf("ピンク", "レッド", "ブルー", "パープル", "グリーン", "グレー", "ブラック")
     val spinnerColors: Array<String> = arrayOf("tag_pink", "tag_red", "tag_blue", "tag_purple", "tag_green", "tag_grey", "tag_black")
 
     lateinit var yearString: String
@@ -41,6 +42,17 @@ class NewPlan : AppCompatActivity(), NotificationPick.OnDateSelectedListener, Ti
         setContentView(R.layout.activity_new_plan)
 
         android.R.layout.simple_spinner_item
+
+        val dataStore = getSharedPreferences("DataStore", Context.MODE_PRIVATE)
+        val pink = dataStore.getString("pink", "ピンク")!!
+        val red = dataStore.getString("red", "レッド")!!
+        val blue = dataStore.getString("blue", "ブルー")!!
+        val purple = dataStore.getString("purple", "パープル")!!
+        val green = dataStore.getString("green", "グリーン")!!
+        val grey = dataStore.getString("grey", "グレー")!!
+        val black = dataStore.getString("black", "ブラック")!!
+
+        val spinnerItems: Array<String> = arrayOf(pink, red, blue, purple, green, grey, black)
 
         val spinner = findViewById<Spinner>(R.id.spinner)
 

@@ -1,5 +1,6 @@
 package com.coscos.ifthenplanner
 
+import android.content.Context
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
@@ -29,7 +30,6 @@ class PlanDetail : AppCompatActivity(), NotificationPick.OnDateSelectedListener,
     lateinit var hourString: String
     lateinit var minString: String
 
-    val spinnerItems: Array<String> = arrayOf("ピンク", "レッド", "ブルー", "パープル", "グリーン", "グレー", "ブラック")
     val spinnerColors: Array<String> = arrayOf(
         "tag_pink",
         "tag_red",
@@ -70,6 +70,17 @@ class PlanDetail : AppCompatActivity(), NotificationPick.OnDateSelectedListener,
         if (notification) {
             switch1.isChecked = true
         }
+
+        val dataStore = getSharedPreferences("DataStore", Context.MODE_PRIVATE)
+        val pink = dataStore.getString("pink", "ピンク")!!
+        val red = dataStore.getString("red", "レッド")!!
+        val blue = dataStore.getString("blue", "ブルー")!!
+        val purple = dataStore.getString("purple", "パープル")!!
+        val green = dataStore.getString("green", "グリーン")!!
+        val grey = dataStore.getString("grey", "グレー")!!
+        val black = dataStore.getString("black", "ブラック")!!
+
+        val spinnerItems: Array<String> = arrayOf(pink, red, blue, purple, green, grey, black)
 
         val spinner = findViewById<Spinner>(R.id.spinner)
 

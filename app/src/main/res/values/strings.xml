@@ -14,9 +14,11 @@
     <string name="button_detail_save">変更を保存</string>
     <string name="button_detail_done">完了にする</string>
     <string name="option_clear">リストを空にする</string>
+    <string name="option_clear_all">すべてのプランを削除する</string>
     <string name="option_share">シェア</string>
     <string name="drw_important">重要</string>
     <string name="drw_trash">ゴミ箱</string>
+    <string name="drw_reminder">リマインダー</string>
     <string name="drw_setting">設定</string>
     <string name="drw_tag">タグ</string>
     <string name="drw_pink">ピンク</string>
@@ -41,4 +43,14 @@
     <string name="channel_description">If Then Planをリマインド</string>
     <string name="ask_if_done">完了しましたか？</string>
     <string name="toolbar_all">すべてのプラン</string>
+    <string name="option_toolbar">設定</string>
+    <string name="option_plan">プラン</string>
+    <string name="option_reminder_null">リマインダーを無効にする</string>
+    <string name="option_reminder_clear">セットされたリマインダーを削除する</string>
+    <string name="option_tag">カラータグの詳細設定</string>
+    <string name="option_notification">通知の設定</string>
+    <string name="tagOption_toolbar">カラータグの詳細設定</string>
+    <string name="ask_if_notification">セットされたすべてのリマインダーを削除しますか？</string>
+    <string name="tagOption_hint">タグの名前</string>
+    <string name="tagOption_name">タグネーム（最大8文字）</string>
 </resources>
