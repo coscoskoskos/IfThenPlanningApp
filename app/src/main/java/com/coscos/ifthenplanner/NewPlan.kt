@@ -154,7 +154,7 @@ class NewPlan : AppCompatActivity(), NotificationPick.OnDateSelectedListener, Ti
         dateString = day.toString()
         dayStringRaw = setDayOfWeek
 
-        date.text = ("${year}年${month}月${day}日（${setDayOfWeek}）")
+        date.text = ("${yearString}年${monthString}月${dayStringRaw}日（${setDayOfWeek}）")
         switch1.isChecked = true
     }
 
